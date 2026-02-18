@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 processed_dir = "data/processed/"
+visualization_dir = "data_visualization/new_visualizations"
+
 drift_df = pd.read_csv(processed_dir + "device_drift_statistics.csv")
 pfl_table = pd.read_csv(processed_dir + "PFL_preprocessed.csv")
 

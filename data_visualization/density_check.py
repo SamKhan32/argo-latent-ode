@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 processed_dir = "data/processed/"
+visualization_dir = "data_visualization/new_visualizations"
+
 drift_df = pd.read_csv(processed_dir + "device_drift_statistics.csv")
 pfl_table = pd.read_csv(processed_dir + "PFL_preprocessed.csv")
 
@@ -196,7 +198,7 @@ ax.legend()
 ax.grid(alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(processed_dir + "profile_density_analysis.png", dpi=300, bbox_inches='tight')
+plt.savefig(visualization_dir + "profile_density_analysis.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 print("\n=== RECOMMENDATIONS FOR NEURAL ODE ===\n")

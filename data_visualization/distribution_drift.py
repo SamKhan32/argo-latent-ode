@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 processed_dir = "data/processed/"
+visualization_dir = "data_visualization/new_visualizations"
 drift_df = pd.read_csv(processed_dir + "device_drift_statistics.csv")
 
 # Let's examine the distribution more carefully
@@ -139,7 +140,7 @@ ax.legend()
 ax.grid(alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(processed_dir + "drift_threshold_analysis.png", dpi=300, bbox_inches='tight')
+plt.savefig(visualization_dir + "drift_threshold_analysis.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 # Recommendations

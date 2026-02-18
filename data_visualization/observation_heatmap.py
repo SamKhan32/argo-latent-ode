@@ -8,6 +8,8 @@ import cartopy.feature as cfeature
 
 # Load the processed data
 processed_dir = "data/processed/"
+visualization_dir = "data_visualization/new_visualizations"
+
 pfl_table = pd.read_csv(processed_dir + "PFL_preprocessed.csv")
 
 

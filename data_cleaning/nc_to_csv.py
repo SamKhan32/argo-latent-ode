@@ -2,8 +2,9 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 
-osd_data_og = "data/original/OSD.nc"
+osd_data_og = "data/original/OSD1.nc"
 pfl_data_og = "data/original/PFL.nc"
+ctd_data_og = "data/original/CTD4.nc"
 processed_dir = "data/processed/" 
 VARIABLES = [
     'Temperature',
@@ -167,4 +168,6 @@ def nc_convert(input_path, output_path, variables=None, exclude_vars=None):
     return full_table
 
 # Process PFL data (auto-detects all variables)
-pfl_table = nc_convert(pfl_data_og, processed_dir + "OSD_preprocessed.csv")
+#pfl_table = nc_convert(pfl_data_og, processed_dir + "PFL_preprocessed.csv")
+#osd_table = nc_convert(osd_data_og, processed_dir+"OSD2_preprocessed.csv")
+ctd_table = nc_convert(ctd_data_og, processed_dir+"CTD4_preprocessed.csv")
