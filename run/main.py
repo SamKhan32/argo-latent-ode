@@ -1,7 +1,7 @@
 import argparse
 import torch
 
-from configs.config1 import LOW_DRIFT_PATH, PFL1_PATH
+from configs.config1 import LOW_DRIFT_PATH, INTERP_PATH
 from data.split import build_splits
 from data.datasets import ArgoProfileDataset, ArgoLatentDataset
 from models.architectures.autoencoder import Autoencoder
@@ -13,7 +13,7 @@ from experiments.training.train_node import train_ode
 
 def stage_split():
     print("=== Stage: split ===")
-    df, split_map = build_splits(LOW_DRIFT_PATH, PFL1_PATH)
+    df, split_map = build_splits(LOW_DRIFT_PATH, INTERP_PATH)
     print("Split complete.")
     return df, split_map
 
@@ -30,7 +30,7 @@ def stage_encode(checkpoint_path="checkpoints/autoencoder_best.pt",
     print("=== Stage: encode ===")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    df, split_map = build_splits(LOW_DRIFT_PATH, PFL1_PATH)
+    df, split_map = build_splits(LOW_DRIFT_PATH, INTERP_PATH)
 
     train_ds = ArgoProfileDataset(df, split="train")
     val_ds   = ArgoProfileDataset(df, split="test",  stats=train_ds.stats)
