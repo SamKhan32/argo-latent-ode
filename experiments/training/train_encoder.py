@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 
 from configs.config1 import (
     ENCODER_LR, ENCODER_EPOCHS, BATCH_SIZE,
-    LOW_DRIFT_PATH, PFL1_PATH,
+    LOW_DRIFT_PATH, INTERP_PATH, DEPTH_GRID,
 )
 from data.split import build_splits
 from data.datasets import ArgoProfileDataset
@@ -22,26 +22,16 @@ def masked_mse(recon, target, mask):
 
 
 ## Collate ##
-## Pads variable-length depth sequences within a batch
+## Since data is now on a fixed depth grid, all profiles have the same depth
+## dimension — no padding needed. collate_fn just stacks tensors normally.
 
 def collate_fn(batch):
-    max_depth = max(item["profile"].shape[0] for item in batch)
-    n_vars    = batch[0]["profile"].shape[1]
-
-    profiles = torch.zeros(len(batch), max_depth, n_vars)
-    masks    = torch.zeros(len(batch), max_depth, n_vars, dtype=torch.bool)
-
-    for i, item in enumerate(batch):
-        d = item["profile"].shape[0]
-        profiles[i, :d] = item["profile"]
-        masks[i, :d]    = item["mask"]
-
     return {
-        "profile": profiles,
-        "mask":    masks,
-        "lat":     torch.stack([item["lat"]    for item in batch]),
-        "lon":     torch.stack([item["lon"]    for item in batch]),
-        "t":       torch.stack([item["t"]      for item in batch]),
+        "profile": torch.stack([item["profile"] for item in batch]),
+        "mask":    torch.stack([item["mask"]    for item in batch]),
+        "lat":     torch.stack([item["lat"]     for item in batch]),
+        "lon":     torch.stack([item["lon"]     for item in batch]),
+        "t":       torch.stack([item["t"]       for item in batch]),
         "wmo_id":  [item["wmo_id"]  for item in batch],
         "cast_id": [item["cast_id"] for item in batch],
     }
@@ -53,8 +43,11 @@ def train_encoder(checkpoint_dir="checkpoints", checkpoint_name="autoencoder_bes
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
+    # fixed depth grid as a tensor — passed to decoder each forward call
+    depth_levels = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
+
     # --- data ---
-    df, split_map = build_splits(LOW_DRIFT_PATH, PFL1_PATH)
+    df, split_map = build_splits(LOW_DRIFT_PATH, INTERP_PATH)
 
     train_ds = ArgoProfileDataset(df, split="train")
     val_ds   = ArgoProfileDataset(df, split="test", stats=train_ds.stats)
@@ -80,7 +73,7 @@ def train_encoder(checkpoint_dir="checkpoints", checkpoint_name="autoencoder_bes
             profile = batch["profile"].to(device)
             mask    = batch["mask"].to(device)
 
-            recon, p = model(profile, mask)
+            recon, p = model(profile, mask, depth_levels)
             loss     = masked_mse(recon, profile, mask)
 
             optimizer.zero_grad()
@@ -98,7 +91,7 @@ def train_encoder(checkpoint_dir="checkpoints", checkpoint_name="autoencoder_bes
             for batch in val_loader:
                 profile = batch["profile"].to(device)
                 mask    = batch["mask"].to(device)
-                recon, _ = model(profile, mask)
+                recon, _ = model(profile, mask, depth_levels)
                 val_loss += masked_mse(recon, profile, mask).item()
 
         val_loss /= len(val_loader)

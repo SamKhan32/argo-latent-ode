@@ -6,7 +6,7 @@ PFL1_PATH      = "data/processed/PFL1_preprocessed.csv"
 INTERP_PATH    = "data/processed/PFL1_interp72.csv"    # output of interpolate_depth_grid.py
 
 ## Variables ##
-INPUT_VARS       = ['Temperature', 'Salinity', 'z']   # encoder inputs (X)
+INPUT_VARS       = ['Temperature', 'Salinity']   # encoder inputs (X)
 TARGET_VARS      = ['Oxygen']                          # held-out reconstruction target (Y)
 ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']  # all sensor vars to interpolate
 MIN_TARGET_PROBE = 8                                   # guaranteed floats with target coverage in probe set
@@ -35,7 +35,7 @@ ODE_HIDDEN     = [64, 64]   # hidden layer sizes in ODE function f(p, lat, lon, 
 
 ## Training ##
 ENCODER_LR     = 1e-3
-ENCODER_EPOCHS = 100
+ENCODER_EPOCHS = 10
 ODE_LR         = 1e-3
 ODE_EPOCHS     = 100
 BATCH_SIZE     = 32

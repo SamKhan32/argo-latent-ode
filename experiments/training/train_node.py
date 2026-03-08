@@ -1,4 +1,5 @@
 import os
+import time
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -95,6 +96,7 @@ def train_ode(
     checkpoint_path = os.path.join(checkpoint_dir, checkpoint_name)
 
     for epoch in range(1, ODE_EPOCHS + 1):
+        t_start = time.time()
 
         ## train ##
         ode_func.train()
@@ -158,7 +160,9 @@ def train_ode(
 
         val_loss /= len(val_loader)
 
-        print(f"Epoch {epoch:3d}/{ODE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}")
+        elapsed = time.time() - t_start
+        print(f"Epoch {epoch:3d}/{ODE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  time={elapsed:.1f}s")
+
 
         ## checkpoint ##
         if val_loss < best_val_loss:

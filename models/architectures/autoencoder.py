@@ -44,9 +44,13 @@ class Encoder(nn.Module):
 
 
 ## Decoder ##
-## Expand p to each depth level, reconstruct INPUT_VARS
-## Input:  p (batch, latent_dim), depth (int)
+## Expand p to each depth level, concatenate depth value, reconstruct INPUT_VARS
+## Input:  p (batch, latent_dim), depth_levels (depth,)
 ## Output: reconstruction (batch, depth, n_vars)
+##
+## depth_levels is passed in as actual meter values (e.g. from DEPTH_GRID)
+## so the MLP knows which depth it is reconstructing at each level.
+## MLP input dim is latent_dim + 1 (the +1 is the depth in meters).
 
 class Decoder(nn.Module):
 
@@ -55,7 +59,7 @@ class Decoder(nn.Module):
         n_vars = n_vars or len(INPUT_VARS)
 
         layers = []
-        in_dim = latent_dim
+        in_dim = latent_dim + 1    # +1 for depth in meters
         for h in hidden:
             layers += [nn.Linear(in_dim, h), nn.ReLU()]
             in_dim = h
@@ -63,14 +67,25 @@ class Decoder(nn.Module):
 
         self.mlp = nn.Sequential(*layers)
 
-    def forward(self, p, depth):
+    def forward(self, p, depth_levels):
         """
-        p     : (batch, latent_dim)
-        depth : int — number of depth levels to reconstruct
-        Returns : (batch, depth, n_vars)
+        p            : (batch, latent_dim)
+        depth_levels : (depth,) tensor of depth values in meters (e.g. DEPTH_GRID)
+        Returns      : (batch, depth, n_vars)
         """
-        p_expanded = p.unsqueeze(1).expand(-1, depth, -1)  # (batch, depth, latent_dim)
-        return self.mlp(p_expanded)                         # (batch, depth, n_vars)
+        batch = p.shape[0]
+        depth = depth_levels.shape[0]
+
+        # expand p across depth levels: (batch, depth, latent_dim)
+        p_expanded = p.unsqueeze(1).expand(-1, depth, -1)
+
+        # expand depth values across batch: (batch, depth, 1)
+        d = depth_levels.view(1, -1, 1).expand(batch, -1, -1)
+
+        # concatenate: (batch, depth, latent_dim + 1)
+        inp = torch.cat([p_expanded, d], dim=-1)
+
+        return self.mlp(inp)                         # (batch, depth, n_vars)
 
 
 ## Autoencoder ##
@@ -85,14 +100,15 @@ class Autoencoder(nn.Module):
         self.encoder = Encoder(n_vars, latent_dim, encoder_hidden)
         self.decoder = Decoder(n_vars, latent_dim, decoder_hidden)
 
-    def forward(self, profile, mask):
+    def forward(self, profile, mask, depth_levels):
         """
-        profile : (batch, depth, n_vars)
-        mask    : (batch, depth, n_vars)
-        Returns : reconstruction (batch, depth, n_vars), p (batch, latent_dim)
+        profile      : (batch, depth, n_vars)
+        mask         : (batch, depth, n_vars)
+        depth_levels : (depth,) tensor of depth values in meters
+        Returns      : reconstruction (batch, depth, n_vars), p (batch, latent_dim)
         """
-        p    = self.encoder(profile, mask)
-        recon = self.decoder(p, depth=profile.shape[1])
+        p     = self.encoder(profile, mask)
+        recon = self.decoder(p, depth_levels)
         return recon, p
 
     def save(self, path, stats=None):
