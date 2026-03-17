@@ -1,0 +1,156 @@
+import torch
+import numpy as np
+import pandas as pd
+from torch.utils.data import Dataset
+
+from configs.config1 import INPUT_VARS, TARGET_VARS, DEPTH_STRIDE
+
+TIME_EPOCH = pd.Timestamp("2000-01-01")   # days since this date used as t
+
+
+def time_to_days(timestamp):
+    """Convert datetime64 timestamp to days since TIME_EPOCH as float."""
+    ts = pd.Timestamp(timestamp)
+    return float((ts - TIME_EPOCH).total_seconds() / 86400)
+
+
+## ArgoProfileDataset ##
+## One item = one cast (depth x vars profile matrix + mask + metadata)
+## Used to train the encoder/decoder on INPUT_VARS
+## If split="train", computes normalization stats from its own data.
+## Pass train_ds.stats to val/probe datasets to ensure consistent scaling.
+
+class ArgoProfileDataset(Dataset):
+
+    def __init__(self, df, split, stats=None):
+        """
+        df    : full annotated dataframe from build_splits()
+        split : one of "train", "test", "probe"
+        stats : dict of {var: (mean, std)} — if None, computed from this split
+        """
+        self.split = split
+        self.input_vars = INPUT_VARS
+
+        split_df = df[df["split"] == split].copy()
+
+        # group by cast — each cast is one profile
+        self.casts = list(split_df.groupby("wod_unique_cast", sort=False))
+
+        # compute or store normalization stats
+        if stats is None:
+            self.stats = self._compute_stats(split_df)
+        else:
+            self.stats = stats
+
+    def _compute_stats(self, df):
+        stats = {}
+        for var in self.input_vars:
+            col = df[var].astype(float)
+            mean = col.mean()
+            std  = col.std()
+            std  = std if std > 1e-6 else 1.0   # avoid division by zero
+            stats[var] = (mean, std)
+        return stats
+
+    def _normalize(self, arr, var):
+        mean, std = self.stats[var]
+        return (arr - mean) / std
+
+    def __len__(self):
+        return len(self.casts)
+
+    def __getitem__(self, idx):
+        cast_id, cast_df = self.casts[idx]
+        cast_df = cast_df.sort_values("z").reset_index(drop=True)
+        cast_df = cast_df.iloc[::DEPTH_STRIDE].reset_index(drop=True)  # subsample depth levels
+
+        n_depths = len(cast_df)
+        n_vars   = len(self.input_vars)
+
+        profile = np.zeros((n_depths, n_vars), dtype=np.float32)
+        mask    = np.zeros((n_depths, n_vars), dtype=bool)
+
+        for j, var in enumerate(self.input_vars):
+            col = cast_df[var].values.astype(float)
+            valid = ~np.isnan(col)
+            normalized = np.where(valid, self._normalize(col, var), 0.0)
+            profile[:, j] = normalized
+            mask[:, j]    = valid
+
+        # cast-level metadata (constant across depth rows)
+        row = cast_df.iloc[0]
+
+        return {
+            "profile":  torch.tensor(profile),           # (depth, n_vars)
+            "mask":     torch.tensor(mask),               # (depth, n_vars)
+            "lat":      torch.tensor(row["lat"],      dtype=torch.float32),
+            "lon":      torch.tensor(row["lon"],      dtype=torch.float32),
+            "t":        torch.tensor(time_to_days(row["time"]), dtype=torch.float64),
+            "wmo_id":   int(row["WMO_ID"]),
+            "cast_id":  int(cast_id),
+        }
+
+
+## ArgoLatentDataset ##
+## One item = one cast's pre-computed latent vector p + metadata
+## Used to train the Neural ODE: dp/dt = f(p, lat, lon, t)
+## Populated after encoder training via an encoding pass over ArgoProfileDataset.
+
+class ArgoLatentDataset(Dataset):
+
+    def __init__(self, records):
+        """
+        records : list of dicts with keys:
+                    p          - latent vector (latent_dim,)
+                    lat        - float
+                    lon        - float
+                    t          - float
+                    device_idx - int (integer-encoded WMO_ID)
+                    cast_id    - int
+        """
+        self.records = records
+
+    def __len__(self):
+        return len(self.records)
+
+    def __getitem__(self, idx):
+        r = self.records[idx]
+        return {
+            "p":          torch.tensor(r["p"],   dtype=torch.float32),
+            "lat":        torch.tensor(r["lat"], dtype=torch.float32),
+            "lon":        torch.tensor(r["lon"], dtype=torch.float32),
+            "t":          torch.tensor(r["t"],   dtype=torch.float64),
+            "device_idx": int(r["device_idx"]),
+            "cast_id":    int(r["cast_id"]),
+        }
+
+    @classmethod
+    def from_encoder(cls, profile_dataset, encoder, device, wmo_to_idx):
+        """
+        Build an ArgoLatentDataset by running the encoder over a profile dataset.
+
+        profile_dataset : ArgoProfileDataset
+        encoder         : trained encoder model (profile, mask -> p)
+        device          : torch device
+        wmo_to_idx      : dict mapping WMO_ID -> integer device index
+        """
+        encoder.eval()
+        records = []
+
+        with torch.no_grad():
+            for item in profile_dataset:
+                profile = item["profile"].unsqueeze(0).to(device)  # (1, depth, n_vars)
+                mask    = item["mask"].unsqueeze(0).to(device)
+
+                p = encoder(profile, mask).squeeze(0).cpu().numpy()
+
+                records.append({
+                    "p":          p,
+                    "lat":        item["lat"].item(),
+                    "lon":        item["lon"].item(),
+                    "t":          item["t"].item(),
+                    "device_idx": wmo_to_idx[item["wmo_id"]],
+                    "cast_id":    item["cast_id"],
+                })
+
+        return cls(records)

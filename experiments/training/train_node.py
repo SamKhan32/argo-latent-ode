@@ -3,7 +3,7 @@ import time
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from torchdiffeq import odeint  # switched from odeint_adjoint
+from torchdiffeq import odeint
 
 from configs.config1 import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM
 from data.datasets import ArgoLatentDataset
@@ -15,10 +15,17 @@ STRIDE      = 2
 ODE_RTOL = 1e-3
 ODE_ATOL = 1e-4
 
+# Fixed time grid in days — all windows are snapped to these points.
+# Argo floats profile roughly every 10 days, so this is a good approximation.
+# The approximation error (~0.5 days) is far below any oceanographically
+# relevant timescale — dynamics are seasonal, not hourly.
+T_GRID = torch.tensor([0.0, 10.0, 20.0, 30.0, 40.0], dtype=torch.float32)
+
 
 ## SlidingWindowDataset ##
-## Builds all valid windows of size WINDOW_SIZE from ArgoLatentDataset
-## One item = one window of consecutive casts from the same float
+## Builds all valid windows of size WINDOW_SIZE from ArgoLatentDataset.
+## One item = one window of consecutive casts from the same float.
+## Time is snapped to T_GRID — actual timestamps are discarded after windowing.
 
 class SlidingWindowDataset(Dataset):
 
@@ -47,14 +54,13 @@ class SlidingWindowDataset(Dataset):
 
     def __getitem__(self, idx):
         window = self.windows[idx]
-        t0     = window[0]["t"]
 
+        # actual timestamps are only used for ordering — integration uses T_GRID
         p   = torch.stack([torch.tensor(r["p"],   dtype=torch.float32) for r in window])
         lat = torch.tensor([r["lat"] for r in window], dtype=torch.float32)
         lon = torch.tensor([r["lon"] for r in window], dtype=torch.float32)
-        t   = torch.tensor([r["t"] - t0 for r in window], dtype=torch.float32)  # relative time
 
-        return {"p": p, "lat": lat, "lon": lon, "t": t}   # all (window_size, ...)
+        return {"p": p, "lat": lat, "lon": lon}   # all (window_size, ...)
 
 
 ## Training loop ##
@@ -68,6 +74,9 @@ def train_ode(
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    # fixed time grid lives on device — shared across all batches
+    t_grid = T_GRID.to(device)
 
     # --- load precomputed latent datasets ---
     print(f"Loading latent cycles from {latent_path}")
@@ -106,23 +115,25 @@ def train_ode(
             p   = batch["p"].to(device)     # (batch, window, latent_dim)
             lat = batch["lat"].to(device)   # (batch, window)
             lon = batch["lon"].to(device)   # (batch, window)
-            t   = batch["t"].to(device)     # (batch, window)
 
-            batch_loss = 0.0
-            for i in range(p.shape[0]):
-                t_i  = t[i]
-                p_i  = p[i]
-                lat0 = lat[i, 0].reshape(1, 1)
-                lon0 = lon[i, 0].reshape(1, 1)
-                z0   = torch.cat([p_i[0:1], lat0, lon0], dim=-1)
+            batch_size = p.shape[0]
 
-                z_pred = odeint(ode_func, z0, t_i, method="dopri5",
-                                rtol=ODE_RTOL, atol=ODE_ATOL)
-                p_pred = z_pred[:, 0, :LATENT_DIM]
+            # build initial ODE state for entire batch at once
+            # z0 = cat(p[:,0,:], lat[:,0:1], lon[:,0:1]) -> (batch, latent_dim + 2)
+            lat0 = lat[:, 0:1]             # (batch, 1)
+            lon0 = lon[:, 0:1]             # (batch, 1)
+            z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)  # (batch, latent_dim + 2)
 
-                batch_loss += loss_fn(p_pred, p_i)
+            # single odeint call for entire batch — t_grid is shared
+            # z_pred: (window, batch, latent_dim + 2)
+            z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
+                            rtol=ODE_RTOL, atol=ODE_ATOL)
 
-            loss = batch_loss / p.shape[0]
+            # extract latent dims, rearrange to (batch, window, latent_dim)
+            p_pred = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
+
+            loss = loss_fn(p_pred, p)
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -140,29 +151,21 @@ def train_ode(
                 p   = batch["p"].to(device)
                 lat = batch["lat"].to(device)
                 lon = batch["lon"].to(device)
-                t   = batch["t"].to(device)
 
-                batch_loss = 0.0
-                for i in range(p.shape[0]):
-                    t_i  = t[i]
-                    p_i  = p[i]
-                    lat0 = lat[i, 0].reshape(1, 1)
-                    lon0 = lon[i, 0].reshape(1, 1)
-                    z0   = torch.cat([p_i[0:1], lat0, lon0], dim=-1)
+                lat0 = lat[:, 0:1]
+                lon0 = lon[:, 0:1]
+                z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
 
-                    z_pred = odeint(ode_func, z0, t_i, method="dopri5",
-                                    rtol=ODE_RTOL, atol=ODE_ATOL)
-                    p_pred = z_pred[:, 0, :LATENT_DIM]
+                z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
+                                rtol=ODE_RTOL, atol=ODE_ATOL)
 
-                    batch_loss += loss_fn(p_pred, p_i)
-
-                val_loss += (batch_loss / p.shape[0]).item()
+                p_pred = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
+                val_loss += loss_fn(p_pred, p).item()
 
         val_loss /= len(val_loader)
 
         elapsed = time.time() - t_start
         print(f"Epoch {epoch:3d}/{ODE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  time={elapsed:.1f}s")
-
 
         ## checkpoint ##
         if val_loss < best_val_loss:
