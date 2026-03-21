@@ -48,7 +48,7 @@ class ArgoProfileDataset(Dataset):
             col = df[var].astype(float)
             mean = col.mean()
             std  = col.std()
-            std  = std if std > 1e-6 else 1.0   # avoid division by zero
+            std  = std if std > 1e-6 else 1.0
             stats[var] = (mean, std)
         return stats
 
@@ -62,7 +62,7 @@ class ArgoProfileDataset(Dataset):
     def __getitem__(self, idx):
         cast_id, cast_df = self.casts[idx]
         cast_df = cast_df.sort_values("z").reset_index(drop=True)
-        cast_df = cast_df.iloc[::DEPTH_STRIDE].reset_index(drop=True)  # subsample depth levels
+        cast_df = cast_df.iloc[::DEPTH_STRIDE].reset_index(drop=True)
 
         n_depths = len(cast_df)
         n_vars   = len(self.input_vars)
@@ -77,12 +77,11 @@ class ArgoProfileDataset(Dataset):
             profile[:, j] = normalized
             mask[:, j]    = valid
 
-        # cast-level metadata (constant across depth rows)
         row = cast_df.iloc[0]
 
         return {
-            "profile":  torch.tensor(profile),           # (depth, n_vars)
-            "mask":     torch.tensor(mask),               # (depth, n_vars)
+            "profile":  torch.tensor(profile),
+            "mask":     torch.tensor(mask),
             "lat":      torch.tensor(row["lat"],      dtype=torch.float32),
             "lon":      torch.tensor(row["lon"],      dtype=torch.float32),
             "t":        torch.tensor(time_to_days(row["time"]), dtype=torch.float64),
@@ -91,10 +90,40 @@ class ArgoProfileDataset(Dataset):
         }
 
 
+## ArgoProbeDataset ##
+## Inherits from ArgoProfileDataset, adds TARGET_VARS profiles to each item.
+## TARGET_VARS are NOT normalized — we predict in original physical units.
+## NaNs are preserved; masked MSE handles missing observations.
+
+class ArgoProbeDataset(ArgoProfileDataset):
+
+    def __init__(self, df, split, stats=None):
+        super().__init__(df, split, stats=stats)
+        self.target_vars = TARGET_VARS
+
+    def __getitem__(self, idx):
+        item = super().__getitem__(idx)
+
+        cast_id, cast_df = self.casts[idx]
+        cast_df = cast_df.sort_values("z").reset_index(drop=True)
+        cast_df = cast_df.iloc[::DEPTH_STRIDE].reset_index(drop=True)
+
+        n_depths    = len(cast_df)
+        n_target    = len(self.target_vars)
+        target      = np.full((n_depths, n_target), np.nan, dtype=np.float32)
+
+        for j, var in enumerate(self.target_vars):
+            if var in cast_df.columns:
+                target[:, j] = cast_df[var].values.astype(float)
+            # if column missing entirely, leave as NaN — masked MSE will ignore
+
+        item["target"] = torch.tensor(target)   # (depth, n_target_vars), may contain NaN
+        return item
+
+
 ## ArgoLatentDataset ##
 ## One item = one cast's pre-computed latent vector p + metadata
 ## Used to train the Neural ODE: dp/dt = f(p, lat, lon, t)
-## Populated after encoder training via an encoding pass over ArgoProfileDataset.
 
 class ArgoLatentDataset(Dataset):
 
@@ -128,18 +157,13 @@ class ArgoLatentDataset(Dataset):
     def from_encoder(cls, profile_dataset, encoder, device, wmo_to_idx):
         """
         Build an ArgoLatentDataset by running the encoder over a profile dataset.
-
-        profile_dataset : ArgoProfileDataset
-        encoder         : trained encoder model (profile, mask -> p)
-        device          : torch device
-        wmo_to_idx      : dict mapping WMO_ID -> integer device index
         """
         encoder.eval()
         records = []
 
         with torch.no_grad():
             for item in profile_dataset:
-                profile = item["profile"].unsqueeze(0).to(device)  # (1, depth, n_vars)
+                profile = item["profile"].unsqueeze(0).to(device)
                 mask    = item["mask"].unsqueeze(0).to(device)
 
                 p = encoder(profile, mask).squeeze(0).cpu().numpy()

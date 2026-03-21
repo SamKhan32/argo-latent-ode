@@ -37,5 +37,5 @@ ODE_HIDDEN     = [64, 64]   # hidden layer sizes in ODE function f(p, lat, lon, 
 ENCODER_LR     = 1e-3
 ENCODER_EPOCHS = 10
 ODE_LR         = 1e-3
-ODE_EPOCHS     = 100
+ODE_EPOCHS     = 40
 BATCH_SIZE     = 32
