@@ -16,13 +16,12 @@ from torchdiffeq import odeint
 from configs.config1 import (
     LATENT_DIM, DEPTH_GRID,
     BATCH_SIZE, SEED,
-    DECODER_HIDDEN,
+    DECODER_HIDDEN, PROBE_EPOCHS, PROBE_LR
 )
 from models.architectures.probe_decoder import OxygenDecoderHead
 from utils.loss_logger import LossLogger
 
-PROBE_LR     = 1e-3
-PROBE_EPOCHS = 100
+
 WINDOW_SIZE  = 5
 STRIDE       = 2
 
@@ -123,6 +122,9 @@ def train_probe(
 
     probe_head = OxygenDecoderHead(latent_dim=LATENT_DIM, hidden=DECODER_HIDDEN).to(device)
     optimizer  = torch.optim.Adam(probe_head.parameters(), lr=PROBE_LR)
+    scheduler  = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=PROBE_EPOCHS, eta_min=1e-6
+    )
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
@@ -204,7 +206,8 @@ def train_probe(
         val_loss /= len(val_loader)
 
         elapsed = time.time() - t_start
-        print(f"Epoch {epoch:3d}/{PROBE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  time={elapsed:.1f}s")
+        current_lr = scheduler.get_last_lr()[0]
+        print(f"Epoch {epoch:3d}/{PROBE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  lr={current_lr:.2e}  time={elapsed:.1f}s")
 
         logger.log(epoch, train_loss, val_loss)
 
@@ -212,6 +215,8 @@ def train_probe(
             best_val_loss = val_loss
             torch.save({"model_state": probe_head.state_dict()}, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
+
+        scheduler.step()
 
     print(f"\nProbe training complete. Best val loss: {best_val_loss:.4f}")
     print(f"Losses saved to: {log_path}")
