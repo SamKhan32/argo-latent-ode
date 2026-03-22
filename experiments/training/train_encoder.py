@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from configs.config1 import (
+from globals.config import (
     LOW_DRIFT_PATH, INTERP_PATH, DEPTH_GRID,
     ENCODER_LR, ENCODER_EPOCHS, BATCH_SIZE, LATENT_DIM,
     ENCODER_HIDDEN, DECODER_HIDDEN,

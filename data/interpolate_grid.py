@@ -10,7 +10,7 @@ Run from project root:
     python -m data.interpolate_depth_grid
 """
 
-from configs.config1 import (
+from globals.config import (
     LOW_DRIFT_PATH,
     PFL1_PATH,
     INTERP_PATH,

@@ -19,7 +19,7 @@ import time
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from configs.config1 import (
+from globals.config import (
     LATENT_DIM, DEPTH_GRID, DECODER_HIDDEN,
     BATCH_SIZE, SEED, TARGET_VARS,
 )

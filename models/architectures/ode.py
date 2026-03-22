@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from configs.config1 import LATENT_DIM, ODE_HIDDEN
+from globals.config import LATENT_DIM, ODE_HIDDEN
 
 
 ## ODEFunc ##

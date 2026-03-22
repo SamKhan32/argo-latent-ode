@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from configs.config1 import (
+from globals.config import (
     LOW_DRIFT_PATH, INTERP_PATH,
     TRAIN_FRAC, TEST_FRAC, PROBE_FRAC, SEED,
     TARGET_VARS, MIN_TARGET_PROBE,

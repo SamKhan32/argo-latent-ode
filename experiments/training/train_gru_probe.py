@@ -13,7 +13,7 @@ import torch
 from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
 
-from configs.config1 import (
+from globals.config import (
     LATENT_DIM, DEPTH_GRID,
     BATCH_SIZE, SEED, DECODER_HIDDEN, ODE_HIDDEN,
 )

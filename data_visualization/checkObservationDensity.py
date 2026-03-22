@@ -7,7 +7,7 @@ Run from the root of the ocean_dynamics_2 project directory.
     python diagnose_redundancy.py
 """
 
-from configs.config1 import LOW_DRIFT_PATH, PFL1_PATH, INPUT_VARS, TARGET_VARS
+from globals.config import LOW_DRIFT_PATH, PFL1_PATH, INPUT_VARS, TARGET_VARS
 
 import pandas as pd
 import numpy as np

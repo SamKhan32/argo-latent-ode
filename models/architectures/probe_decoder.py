@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from configs.config1 import LATENT_DIM, DECODER_HIDDEN, TARGET_VARS
+from globals.config import LATENT_DIM, DECODER_HIDDEN, TARGET_VARS
 
 
 class OxygenDecoderHead(nn.Module):

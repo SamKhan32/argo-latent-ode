@@ -12,7 +12,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torchdiffeq import odeint
 
-from configs.config1 import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM
+from globals.config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM
 from data.datasets import ArgoLatentDataset
 from models.architectures.ode import ODEFunc
 from utils.loss_logger import LossLogger

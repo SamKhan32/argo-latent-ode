@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
 
-from configs.config1 import INPUT_VARS, TARGET_VARS, DEPTH_STRIDE
+from globals.config import INPUT_VARS, TARGET_VARS, DEPTH_STRIDE
 
 TIME_EPOCH = pd.Timestamp("2000-01-01")   # days since this date used as t
 

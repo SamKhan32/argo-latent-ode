@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from configs.config1 import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, ODE_HIDDEN
+from globals.config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, ODE_HIDDEN
 from data.datasets import ArgoLatentDataset
 from models.architectures.gru import GRUDynamics
 from experiments.training.train_node import SlidingWindowDataset   # reuse exactly
