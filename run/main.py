@@ -16,6 +16,7 @@ from experiments.training.train_probe import train_probe
 from experiments.training.train_probe_baseline import train_probe_baseline
 from experiments.training.train_gru import train_gru
 from experiments.training.train_gru_probe import train_gru_probe
+from experiments.evaluation.extrapolation import run_extrapolation
 
 
 ## Stages ##
@@ -124,10 +125,13 @@ def stage_gru_probe(
 
     return train_gru_probe(probe_ds, encoder, gru)
 
+def stage_extrapolation(latent_path="checkpoints/latent_cycles.pt"):
+    print("=== Stage: extrapolation ===")
+    return run_extrapolation(latent_path=latent_path)
 
 ## Main ##
 
-STAGES = ["split", "encoder", "encode", "ode", "probe", "probe_baseline", "gru", "gru_probe", "all"]
+STAGES = ["split", "encoder", "encode", "ode", "probe", "probe_baseline", "gru", "gru_probe","extrapolation", "all"]
 
 def main():
     parser = argparse.ArgumentParser(description="Ocean Dynamics Latent ODE pipeline")
@@ -154,6 +158,8 @@ def main():
         stage_gru(args.latent)
     elif args.stage == "gru_probe":
         stage_gru_probe(args.checkpoint, args.gru_checkpoint)
+    elif args.stage == "extrapolation":
+        stage_extrapolation(args.latent)
     elif args.stage == "all":
         stage_split()
         checkpoint_path = stage_encoder()
