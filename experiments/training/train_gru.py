@@ -21,14 +21,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from globals.config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, ODE_HIDDEN
+from globals.config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, ODE_HIDDEN, WINDOW_SIZE, STRIDE
 from data.datasets import ArgoLatentDataset
 from models.architectures.gru import GRUDynamics
 from experiments.training.train_node import SlidingWindowDataset   # reuse exactly
 from utils.loss_logger import LossLogger
-
-WINDOW_SIZE = 5
-STRIDE      = 2
 
 
 def train_gru(

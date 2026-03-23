@@ -21,8 +21,7 @@ from utils.loss_logger import LossLogger
 ODE_RTOL = 1e-4
 ODE_ATOL = 1e-5
 
-T_GRID = torch.tensor([0.0, 10.0, 20.0, 30.0, 40.0], dtype=torch.float32)
-
+T_GRID = torch.arange(0, WINDOW_SIZE, dtype=torch.float32) * 10.0
 
 class SlidingWindowDataset(Dataset):
 
