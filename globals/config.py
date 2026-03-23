@@ -28,15 +28,15 @@ PROBE_FRAC = 0.10
 SEED       = 42
 
 ## Model hyperparameters ##
-LATENT_DIM     = 16         # dimension of latent profile vector p
-ENCODER_HIDDEN = [64, 64]   # hidden layer sizes in encoder MLP
+LATENT_DIM     = 32         # dimension of latent profile vector p
+ENCODER_HIDDEN = [128, 128]   # hidden layer sizes in encoder MLP
 DECODER_HIDDEN = [64, 64]   # hidden layer sizes in decoder MLP
-ODE_HIDDEN     = [64, 64]   # hidden layer sizes in ODE function f(p, lat, lon, t)
+ODE_HIDDEN     = [128, 128,128]   # hidden layer sizes in ODE function f(p, lat, lon, t)
 
 ## Training ##
 ENCODER_LR     = 1e-3
-ENCODER_EPOCHS = 10
-ODE_LR         = 1e-3
+ENCODER_EPOCHS = 40
+ODE_LR         = 5e-4 
 ODE_EPOCHS     = 40
 BATCH_SIZE     = 32
 PROBE_LR = 1e-4

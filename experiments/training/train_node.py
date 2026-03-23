@@ -20,8 +20,8 @@ from utils.loss_logger import LossLogger
 WINDOW_SIZE = 5
 STRIDE      = 2
 
-ODE_RTOL = 1e-3
-ODE_ATOL = 1e-4
+ODE_RTOL = 1e-4
+ODE_ATOL = 1e-5
 
 T_GRID = torch.tensor([0.0, 10.0, 20.0, 30.0, 40.0], dtype=torch.float32)
 
