@@ -1,0 +1,63 @@
+======================================================
+Start Time  : Mon Mar 23 10:41:25 AM EDT 2026
+Submit Dir  : /users/sphill86/ocean_dynamics_2
+Job ID/Name : 10444898 / ocean_latent_ode
+Partition   : GPU
+======================================================
+=== Stage: extrapolation ===
+Using device: cuda
+Loading latent cycles from checkpoints/latent_cycles.pt
+Val windows (horizon=100): 12
+
+Evaluating: ode
+  horizon=5 (50 days)...
+  -> final step MSE: 0.2848
+  horizon=10 (100 days)...
+  -> final step MSE: 0.2831
+  horizon=15 (150 days)...
+  -> final step MSE: 0.3540
+  horizon=20 (200 days)...
+  -> final step MSE: 0.4918
+  horizon=30 (300 days)...
+  -> final step MSE: 0.9978
+  horizon=40 (400 days)...
+  -> final step MSE: 1.3677
+  horizon=50 (500 days)...
+  -> final step MSE: 1.8999
+  horizon=100 (1000 days)...
+  -> final step MSE: 5.8798
+
+Evaluating: gru
+  horizon=5 (50 days)...
+  -> final step MSE: 0.2705
+  horizon=10 (100 days)...
+  -> final step MSE: 0.2068
+  horizon=15 (150 days)...
+  -> final step MSE: 0.1791
+  horizon=20 (200 days)...
+  -> final step MSE: 0.2113
+  horizon=30 (300 days)...
+  -> final step MSE: 0.4111
+  horizon=40 (400 days)...
+  -> final step MSE: 0.4019
+  horizon=50 (500 days)...
+  -> final step MSE: 0.6024
+  horizon=100 (1000 days)...
+  -> final step MSE: 0.7281
+
+Results saved to results/extrapolation_results.csv
+
+=== Extrapolation Summary (final step MSE) ===
+model         depth_only       gru       ode
+horizon_days                                
+50                0.0274  0.270463  0.284751
+100               0.0274  0.206777  0.283073
+150               0.0274  0.179093  0.353956
+200               0.0274  0.211313  0.491846
+300               0.0274  0.411091  0.997781
+400               0.0274  0.401886  1.367705
+500               0.0274  0.602403  1.899942
+1000              0.0274  0.728062  5.879803
+======================================================
+End Time : Mon Mar 23 10:42:25 AM EDT 2026
+======================================================
