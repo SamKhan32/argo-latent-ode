@@ -2,7 +2,7 @@
 #SBATCH --job-name=ocean_latent_ode
 #SBATCH --output=logs/slurm_%j.out
 #SBATCH --error=logs/slurm_%j.err
-#SBATCH --time=12:00:00
+#SBATCH --time=4:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
