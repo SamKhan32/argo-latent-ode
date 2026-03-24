@@ -72,6 +72,8 @@ def main():
     preprocessed_path = f"data/processed/PFL{n}_preprocessed.csv"
     low_drift_path    = f"data/processed/PFL{n}_low_drift_devices.csv"
     output_path       = f"data/processed/PFL{n}_interp72.csv"
+    df        = pd.read_csv(preprocessed_path, low_memory=False)
+
 
     # For PFL1 use the combined all_low_drift_oxygen_devices if available,
     # otherwise fall back to PFL1_low_drift_devices
@@ -85,7 +87,10 @@ def main():
 
     df        = pd.read_csv(preprocessed_path, low_memory=False)
     low_drift = pd.read_csv(low_drift_path)
-
+    # construct time from date + GMT_time if not already present
+    if 'time' not in df.columns:
+        df['time'] = pd.to_datetime(df['date'], format='%Y%m%d') + \
+                    pd.to_timedelta(df['GMT_time'], unit='ns')
     valid_wmos = set(low_drift[WMO_COL])
     df = df[df[WMO_COL].isin(valid_wmos)].copy()
 
@@ -121,3 +126,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
