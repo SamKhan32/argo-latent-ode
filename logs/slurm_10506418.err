@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    return self._engine.get_loc(casted_key)
+  File "pandas/_libs/index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7096, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'time'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/users/sphill86/ocean_dynamics_2/run/main.py", line 211, in <module>
+    main()
+  File "/users/sphill86/ocean_dynamics_2/run/main.py", line 200, in main
+    checkpoint_path = stage_encoder()
+  File "/users/sphill86/ocean_dynamics_2/run/main.py", line 38, in stage_encoder
+    return train_encoder()
+  File "/users/sphill86/ocean_dynamics_2/experiments/training/train_encoder.py", line 65, in train_encoder
+    for batch in train_loader:
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/torch/utils/data/dataloader.py", line 734, in __next__
+    data = self._next_data()
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/torch/utils/data/dataloader.py", line 790, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/torch/utils/data/_utils/fetch.py", line 52, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/torch/utils/data/_utils/fetch.py", line 52, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/users/sphill86/ocean_dynamics_2/data/datasets.py", line 87, in __getitem__
+    "t":        torch.tensor(time_to_days(row["time"]), dtype=torch.float64),
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/pandas/core/series.py", line 1133, in __getitem__
+    return self._get_value(key)
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/pandas/core/series.py", line 1249, in _get_value
+    loc = self.index.get_loc(label)
+  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/pandas/core/indexes/base.py", line 3819, in get_loc
+    raise KeyError(key) from err
+KeyError: 'time'
