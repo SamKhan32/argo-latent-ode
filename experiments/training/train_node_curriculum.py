@@ -6,15 +6,16 @@ Stage 2b — Curriculum Neural ODE training on latent trajectories.
 Progressively increases window size across phases, allowing the ODE to
 first learn short-horizon dynamics before being asked to generalize further.
 
-Schedule is controlled by CURRICULUM_WINDOWS in globals/config.py.
-ODE_EPOCHS is divided evenly across phases. Each phase gets its own
-cosine annealing cycle, restarting fresh from the previous phase's weights.
+Schedule is controlled by CURRICULUM_WINDOWS and CURRICULUM_WEIGHTS in
+globals/config.py. Each phase gets its own cosine annealing cycle,
+restarting fresh from the previous phase's weights.
 
-Example with ODE_EPOCHS=100, CURRICULUM_WINDOWS=[5, 10, 20, 25]:
-    Phase 1: window=5,  epochs=25, lr: ODE_LR -> 1e-6
-    Phase 2: window=10, epochs=25, lr: ODE_LR -> 1e-6
-    Phase 3: window=20, epochs=25, lr: ODE_LR -> 1e-6
-    Phase 4: window=25, epochs=25, lr: ODE_LR -> 1e-6
+Example with ODE_EPOCHS=200, CURRICULUM_WINDOWS=[5, 10, 20, 25],
+CURRICULUM_WEIGHTS=[0.15, 0.20, 0.25, 0.40]:
+    Phase 1: window=5,  epochs=30,  lr: ODE_LR -> 1e-6
+    Phase 2: window=10, epochs=40,  lr: ODE_LR -> 1e-6
+    Phase 3: window=20, epochs=50,  lr: ODE_LR -> 1e-6
+    Phase 4: window=25, epochs=80,  lr: ODE_LR -> 1e-6
 
 Losses saved to results/node_curriculum_losses.csv.
 
@@ -31,7 +32,7 @@ from torchdiffeq import odeint
 
 from globals.config import (
     ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM,
-    STRIDE, CURRICULUM_WINDOWS,
+    STRIDE, CURRICULUM_WINDOWS, CURRICULUM_WEIGHTS,
 )
 from data.datasets import ArgoLatentDataset
 from models.architectures.ode import ODEFunc
@@ -73,6 +74,18 @@ class SlidingWindowDataset(Dataset):
         return {"p": p, "lat": lat, "lon": lon}
 
 
+def build_phase_epochs(total_epochs, weights, n_phases):
+    """
+    Distribute total_epochs across phases using weights.
+    Remainder from rounding goes to the last phase.
+    """
+    assert len(weights) == n_phases, "CURRICULUM_WEIGHTS must have same length as CURRICULUM_WINDOWS"
+    assert abs(sum(weights) - 1.0) < 1e-6, "CURRICULUM_WEIGHTS must sum to 1.0"
+    phase_epochs = [max(1, int(w * total_epochs)) for w in weights]
+    phase_epochs[-1] += total_epochs - sum(phase_epochs)
+    return phase_epochs
+
+
 def train_ode_curriculum(
     latent_path="checkpoints/latent_cycles.pt",
     checkpoint_dir="checkpoints",
@@ -96,24 +109,23 @@ def train_ode_curriculum(
     os.makedirs(checkpoint_dir, exist_ok=True)
     ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
 
-    n_phases         = len(CURRICULUM_WINDOWS)
-    epochs_per_phase = max(1, ODE_EPOCHS // n_phases)
+    n_phases     = len(CURRICULUM_WINDOWS)
+    phase_epochs = build_phase_epochs(ODE_EPOCHS, CURRICULUM_WEIGHTS, n_phases)
 
     print(f"\nCurriculum schedule:")
-    print(f"  Phases:           {CURRICULUM_WINDOWS}")
-    print(f"  Epochs per phase: {epochs_per_phase}")
-    print(f"  Total epochs:     {epochs_per_phase * n_phases}")
+    for i, (w, e) in enumerate(zip(CURRICULUM_WINDOWS, phase_epochs)):
+        print(f"  Phase {i+1}: window={w:2d} ({w*10:3d} days)  epochs={e}")
+    print(f"  Total epochs: {sum(phase_epochs)}")
 
     global_epoch = 0
 
-    for phase_idx, window_size in enumerate(CURRICULUM_WINDOWS):
+    for phase_idx, (window_size, n_epochs) in enumerate(zip(CURRICULUM_WINDOWS, phase_epochs)):
         print(f"\n{'='*60}")
-        print(f"Phase {phase_idx + 1}/{n_phases} — window={window_size} ({window_size * 10} days)")
+        print(f"Phase {phase_idx + 1}/{n_phases} — window={window_size} ({window_size * 10} days)  epochs={n_epochs}")
         print(f"{'='*60}")
 
         t_grid = torch.arange(0, window_size, dtype=torch.float32).to(device) * 10.0
 
-        # rebuild datasets for this window size
         print("Building train windows...")
         train_windows = SlidingWindowDataset(latent_train, window_size, STRIDE)
         print(f"Train windows: {len(train_windows)}")
@@ -125,13 +137,13 @@ def train_ode_curriculum(
         train_loader = DataLoader(train_windows, batch_size=BATCH_SIZE, shuffle=True,  num_workers=0)
         val_loader   = DataLoader(val_windows,   batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
-        # fresh optimizer and scheduler each phase
+        # fresh optimizer and cosine scheduler each phase
         optimizer = torch.optim.Adam(ode_func.parameters(), lr=ODE_LR)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=epochs_per_phase, eta_min=1e-6
+            optimizer, T_max=n_epochs, eta_min=1e-6
         )
 
-        for epoch in range(1, epochs_per_phase + 1):
+        for epoch in range(1, n_epochs + 1):
             global_epoch += 1
             t_start = time.time()
 
@@ -186,7 +198,7 @@ def train_ode_curriculum(
             current_lr = scheduler.get_last_lr()[0]
             print(
                 f"  [{phase_idx+1}/{n_phases}] "
-                f"Epoch {epoch:3d}/{epochs_per_phase}  "
+                f"Epoch {epoch:3d}/{n_epochs}  "
                 f"(global {global_epoch})  "
                 f"train={train_loss:.4f}  val={val_loss:.4f}  "
                 f"lr={current_lr:.2e}  time={elapsed:.1f}s"
