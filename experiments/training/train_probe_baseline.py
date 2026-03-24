@@ -23,7 +23,11 @@ from globals.config import (
     LATENT_DIM, DEPTH_GRID, DECODER_HIDDEN,
     BATCH_SIZE, SEED, TARGET_VARS,
 )
-from experiments.training.train_probe import SlidingWindowProbeDataset, masked_mse
+from experiments.training.train_probe import (
+    SlidingWindowProbeDataset,
+    masked_mse,
+    compute_oxy_stats,
+)
 
 PROBE_LR     = 1e-3
 PROBE_EPOCHS = 100
@@ -45,7 +49,7 @@ class DepthOnlyDecoder(nn.Module):
         n_out = len(TARGET_VARS)
 
         layers = []
-        in_dim = 1   # depth only
+        in_dim = 1
         for h in hidden:
             layers += [nn.Linear(in_dim, h), nn.ReLU()]
             in_dim = h
@@ -54,16 +58,8 @@ class DepthOnlyDecoder(nn.Module):
         self.mlp = nn.Sequential(*layers)
 
     def forward(self, depth_levels):
-        """
-        depth_levels : (depth,) float tensor — DEPTH_GRID in meters
-        returns      : (depth, n_target_vars)
-
-        Note: no batch dim — same prediction for every sample since there
-        is no per-cast information. We expand to (B, D, n_vars) in the
-        training loop for loss computation.
-        """
-        d = depth_levels.view(-1, 1)   # (D, 1)
-        return self.mlp(d)             # (D, n_target_vars)
+        d = depth_levels.view(-1, 1)
+        return self.mlp(d)
 
 
 # ── training loop ─────────────────────────────────────────────────────────────
@@ -76,7 +72,14 @@ def train_probe_baseline(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)  # (D,)
+    depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
+
+    # compute oxygen normalization stats before splitting
+    print("Computing oxygen normalization stats...")
+    oxy_mean, oxy_std = compute_oxy_stats(probe_dataset)
+    print(f"Oxygen stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
+    oxy_mean_t = torch.tensor(oxy_mean, dtype=torch.float32, device=device)
+    oxy_std_t  = torch.tensor(oxy_std,  dtype=torch.float32, device=device)
 
     print("Building probe windows...")
     window_ds = SlidingWindowProbeDataset(probe_dataset)
@@ -102,21 +105,19 @@ def train_probe_baseline(
     for epoch in range(1, PROBE_EPOCHS + 1):
         t_start = time.time()
 
-        # ── train ──
         model.train()
         train_loss = 0.0
 
         for batch in train_loader:
-            target = batch["target"].to(device)   # (B, W, D, n_tgt)
+            target = batch["target"].to(device)
             B, W, D, n_tgt = target.shape
 
-            # same prediction for every sample — expand across B*W
-            oxy_pred = model(depth_tensor)                          # (D, n_tgt)
-            oxy_pred = oxy_pred.unsqueeze(0).expand(B * W, -1, -1) # (B*W, D, n_tgt)
-
+            oxy_pred    = model(depth_tensor)
+            oxy_pred    = oxy_pred.unsqueeze(0).expand(B * W, -1, -1)
             target_flat = target.reshape(B * W, D, n_tgt)
+            target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
-            loss = masked_mse(oxy_pred, target_flat)
+            loss = masked_mse(oxy_pred, target_norm)
 
             optimizer.zero_grad()
             loss.backward()
@@ -126,7 +127,6 @@ def train_probe_baseline(
 
         train_loss /= len(train_loader)
 
-        # ── validate ──
         model.eval()
         val_loss = 0.0
 
@@ -138,8 +138,9 @@ def train_probe_baseline(
                 oxy_pred    = model(depth_tensor)
                 oxy_pred    = oxy_pred.unsqueeze(0).expand(B * W, -1, -1)
                 target_flat = target.reshape(B * W, D, n_tgt)
+                target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
-                val_loss += masked_mse(oxy_pred, target_flat).item()
+                val_loss += masked_mse(oxy_pred, target_norm).item()
 
         val_loss /= len(val_loader)
 
@@ -148,7 +149,11 @@ def train_probe_baseline(
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save({"model_state": model.state_dict()}, ckpt_path)
+            torch.save({
+                "model_state": model.state_dict(),
+                "oxy_mean":    oxy_mean,
+                "oxy_std":     oxy_std,
+            }, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
 
     print(f"\nBaseline training complete. Best val loss: {best_val_loss:.4f}")

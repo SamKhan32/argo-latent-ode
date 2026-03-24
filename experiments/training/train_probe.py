@@ -84,6 +84,20 @@ def encode_profiles(encoder, profiles, mask, device):
         return encoder(profiles.to(device), mask.to(device))
 
 
+def compute_oxy_stats(probe_dataset):
+    """Compute oxygen normalization stats from the full probe dataset."""
+    all_targets = []
+    for i in range(len(probe_dataset)):
+        t = probe_dataset[i]["target"]
+        all_targets.append(t.flatten())
+    all_targets = torch.cat(all_targets)
+    valid = all_targets[~torch.isnan(all_targets)]
+    oxy_mean = valid.mean().item()
+    oxy_std  = valid.std().item()
+    oxy_std  = oxy_std if oxy_std > 1e-6 else 1.0
+    return oxy_mean, oxy_std
+
+
 def train_probe(
     probe_dataset,
     encoder,
@@ -105,6 +119,13 @@ def train_probe(
 
     encoder  = encoder.to(device)
     ode_func = ode_func.to(device)
+
+    # compute oxygen normalization stats before splitting
+    print("Computing oxygen normalization stats...")
+    oxy_mean, oxy_std = compute_oxy_stats(probe_dataset)
+    print(f"Oxygen stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
+    oxy_mean_t = torch.tensor(oxy_mean, dtype=torch.float32, device=device)
+    oxy_std_t  = torch.tensor(oxy_std,  dtype=torch.float32, device=device)
 
     print("Building probe windows...")
     window_ds = SlidingWindowProbeDataset(probe_dataset, WINDOW_SIZE, STRIDE)
@@ -160,9 +181,10 @@ def train_probe(
             p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
             p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
             target_flat = target.reshape(B * W, D, target.shape[-1])
+            target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
             oxy_pred = probe_head(p_pred_flat, depth_tensor)
-            loss     = masked_mse(oxy_pred, target_flat)
+            loss     = masked_mse(oxy_pred, target_norm)
 
             optimizer.zero_grad()
             loss.backward()
@@ -199,9 +221,10 @@ def train_probe(
                 p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
                 p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
                 target_flat = target.reshape(B * W, D, target.shape[-1])
+                target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
                 oxy_pred  = probe_head(p_pred_flat, depth_tensor)
-                val_loss += masked_mse(oxy_pred, target_flat).item()
+                val_loss += masked_mse(oxy_pred, target_norm).item()
 
         val_loss /= len(val_loader)
 
@@ -213,7 +236,11 @@ def train_probe(
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save({"model_state": probe_head.state_dict()}, ckpt_path)
+            torch.save({
+                "model_state": probe_head.state_dict(),
+                "oxy_mean":    oxy_mean,
+                "oxy_std":     oxy_std,
+            }, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
 
         scheduler.step()

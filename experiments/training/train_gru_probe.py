@@ -23,6 +23,7 @@ from experiments.training.train_probe import (
     SlidingWindowProbeDataset,
     masked_mse,
     encode_profiles,
+    compute_oxy_stats,
 )
 from utils.loss_logger import LossLogger
 
@@ -53,6 +54,13 @@ def train_gru_probe(
 
     encoder = encoder.to(device)
     gru     = gru.to(device)
+
+    # compute oxygen normalization stats before splitting
+    print("Computing oxygen normalization stats...")
+    oxy_mean, oxy_std = compute_oxy_stats(probe_dataset)
+    print(f"Oxygen stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
+    oxy_mean_t = torch.tensor(oxy_mean, dtype=torch.float32, device=device)
+    oxy_std_t  = torch.tensor(oxy_std,  dtype=torch.float32, device=device)
 
     print("Building probe windows...")
     window_ds = SlidingWindowProbeDataset(probe_dataset, WINDOW_SIZE)
@@ -96,16 +104,17 @@ def train_gru_probe(
             profile_flat = profile.reshape(B * W, D, n_in)
             mask_flat    = mask.reshape(B * W, D, n_in)
             p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-            p0           = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]   # (B, latent_dim)
+            p0           = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
 
-            # evolve with GRU
-            p_traj      = gru(p0, lat[:, 0], lon[:, 0], n_steps)       # (W, B, latent_dim)
-            p_pred      = p_traj.permute(1, 0, 2)                       # (B, W, latent_dim)
+            p_traj      = gru(p0, lat[:, 0], lon[:, 0], n_steps)
+            p_pred      = p_traj.permute(1, 0, 2)
             p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
 
             target_flat = target.reshape(B * W, D, target.shape[-1])
-            oxy_pred    = probe_head(p_pred_flat, depth_tensor)
-            loss        = masked_mse(oxy_pred, target_flat)
+            target_norm = (target_flat - oxy_mean_t) / oxy_std_t
+
+            oxy_pred = probe_head(p_pred_flat, depth_tensor)
+            loss     = masked_mse(oxy_pred, target_norm)
 
             optimizer.zero_grad()
             loss.backward()
@@ -138,8 +147,10 @@ def train_gru_probe(
                 p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
 
                 target_flat = target.reshape(B * W, D, target.shape[-1])
-                oxy_pred    = probe_head(p_pred_flat, depth_tensor)
-                val_loss   += masked_mse(oxy_pred, target_flat).item()
+                target_norm = (target_flat - oxy_mean_t) / oxy_std_t
+
+                oxy_pred  = probe_head(p_pred_flat, depth_tensor)
+                val_loss += masked_mse(oxy_pred, target_norm).item()
 
         val_loss /= len(val_loader)
 
@@ -150,7 +161,11 @@ def train_gru_probe(
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save({"model_state": probe_head.state_dict()}, ckpt_path)
+            torch.save({
+                "model_state": probe_head.state_dict(),
+                "oxy_mean":    oxy_mean,
+                "oxy_std":     oxy_std,
+            }, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
 
     print(f"\nGRU probe training complete. Best val loss: {best_val_loss:.4f}")
