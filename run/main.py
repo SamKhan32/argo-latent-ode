@@ -18,7 +18,11 @@ from experiments.training.train_gru import train_gru
 from experiments.training.train_gru_probe import train_gru_probe
 from experiments.evaluation.extrapolation import run_extrapolation
 from experiments.training.train_finetune import train_finetune
-
+from utils.seeding import set_seed
+from data.split import build_splits, ALL_LOW_DRIFT_PATH
+from data.datasets import ArgoProbeDataset
+## SEEDING ##
+set_seed()
 ## Stages ##
 
 def stage_split():
@@ -134,9 +138,19 @@ def stage_finetune(
     probe_checkpoint="checkpoints/probe_head_best.pt",
 ):
     print("=== Stage: finetune ===")
-    probe_ds, _, _ = _load_probe_dataset(autoencoder_checkpoint)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    df, _      = build_splits(ALL_LOW_DRIFT_PATH, INTERP_PATH)
+    train_ds   = ArgoProfileDataset(df, split="train")
+    train_probe_ds = ArgoProbeDataset(df, split="train",  stats=train_ds.stats)
+    probe_ds       = ArgoProbeDataset(df, split="probe",  stats=train_ds.stats)
+
+    combined = torch.utils.data.ConcatDataset([train_probe_ds, probe_ds])
+
+    model, _ = Autoencoder.load(autoencoder_checkpoint, device=device)
+
     return train_finetune(
-        probe_ds,
+        combined,
         autoencoder_checkpoint=autoencoder_checkpoint,
         ode_checkpoint=ode_checkpoint,
         probe_checkpoint=probe_checkpoint,
@@ -152,6 +166,7 @@ def main():
     parser.add_argument("--ode_checkpoint", type=str, default="checkpoints/ode_best.pt")
     parser.add_argument("--gru_checkpoint", type=str, default="checkpoints/gru_best.pt")
     parser.add_argument("--latent",         type=str, default="checkpoints/latent_cycles.pt")
+    parser.add_argument("--probe_checkpoint", type=str, default="checkpoints/probe_head_best.pt")
     args = parser.parse_args()
 
     if args.stage == "split":
@@ -173,16 +188,17 @@ def main():
     elif args.stage == "extrapolation":
         stage_extrapolation(args.latent)
     elif args.stage == "finetune":
-        stage_finetune(args.checkpoint, args.ode_checkpoint, args.gru_checkpoint)
+        stage_finetune(args.checkpoint, args.ode_checkpoint, args.probe_checkpoint)
     elif args.stage == "all":
         stage_split()
         checkpoint_path = stage_encoder()
         stage_encode(checkpoint_path, args.latent)
         stage_ode(args.latent)
+        stage_gru(args.latent)
         stage_probe(checkpoint_path, args.ode_checkpoint)
         stage_probe_baseline(checkpoint_path)
-        stage_gru(args.latent)
         stage_gru_probe(checkpoint_path, args.gru_checkpoint)
+        stage_finetune(args.checkpoint, args.ode_checkpoint, args.probe_checkpoint)
 
 
 if __name__ == "__main__":

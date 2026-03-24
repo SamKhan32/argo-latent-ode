@@ -23,8 +23,8 @@ Usage:
 import os
 import time
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
+from torchdiffeq import odeint
 
 from globals.config import (
     LATENT_DIM, DEPTH_GRID, BATCH_SIZE, SEED,
@@ -33,11 +33,10 @@ from globals.config import (
     LAMBDA_ODE, LAMBDA_OXY,
 )
 from data.datasets import ArgoJointWindowDataset
-from models.architectures.autoencoder import Autoencoder, Decoder
+from models.architectures.autoencoder import Autoencoder
 from models.architectures.ode import ODEFunc
 from models.architectures.probe_decoder import OxygenDecoderHead
 from utils.loss_logger import LossLogger
-from torchdiffeq import odeint
 
 WINDOW_SIZE = 5
 STRIDE      = 2
@@ -50,11 +49,61 @@ T_GRID = torch.arange(0, WINDOW_SIZE, dtype=torch.float32) * 10.0
 torch.manual_seed(SEED)
 
 
-def masked_mse(pred, target):
+def masked_mse_ts(pred, target, mask):
+    """MSE using explicit boolean mask — for T/S reconstruction loss."""
+    if mask.sum() == 0:
+        return torch.tensor(0.0, requires_grad=True, device=pred.device)
+    return ((pred - target)[mask] ** 2).mean()
+
+
+def masked_mse_oxy(pred, target):
+    """MSE using NaN mask — for oxygen loss where missing values are NaN."""
     mask = ~torch.isnan(target)
     if mask.sum() == 0:
         return torch.tensor(0.0, requires_grad=True, device=pred.device)
     return ((pred - target)[mask] ** 2).mean()
+
+
+def _forward(encoder, decoder, ode_func, probe_head,
+             profile, mask, target, lat, lon,
+             depth_tensor, t_grid, device):
+    """
+    Shared forward pass for train and val loops.
+    Returns (loss, loss_ts_raw, loss_ts_evo, loss_oxy).
+    """
+    B, W, D, n_in = profile.shape
+
+    profile_flat = profile.reshape(B * W, D, n_in)
+    mask_flat    = mask.reshape(B * W, D, n_in)
+    p_flat       = encoder(profile_flat, mask_flat)          # (B*W, latent_dim)
+    p            = p_flat.reshape(B, W, LATENT_DIM)          # (B, W, latent_dim)
+
+    # T/S reconstruction from raw encoder output
+    recon_raw   = decoder(p_flat, depth_tensor)              # (B*W, D, n_vars)
+    loss_ts_raw = masked_mse_ts(recon_raw, profile_flat, mask_flat.bool())
+
+    # ODE rollout from first cycle
+    lat0 = lat[:, 0:1]
+    lon0 = lon[:, 0:1]
+    z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
+
+    z_pred      = odeint(ode_func, z0, t_grid, method="dopri5",
+                         rtol=ODE_RTOL, atol=ODE_ATOL)
+    p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)  # (B, W, latent_dim)
+    p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
+
+    # T/S reconstruction from ODE-evolved latent
+    recon_evo   = decoder(p_pred_flat, depth_tensor)
+    loss_ts_evo = masked_mse_ts(recon_evo, profile_flat, mask_flat.bool())
+
+    # Oxygen prediction from ODE-evolved latent
+    target_flat = target.reshape(B * W, D, target.shape[-1])
+    oxy_pred    = probe_head(p_pred_flat, depth_tensor)
+    loss_oxy    = masked_mse_oxy(oxy_pred, target_flat)
+
+    loss = loss_ts_raw + LAMBDA_ODE * loss_ts_evo + LAMBDA_OXY * loss_oxy
+
+    return loss, loss_ts_raw, loss_ts_evo, loss_oxy
 
 
 def train_finetune(
@@ -95,11 +144,6 @@ def train_finetune(
     for param in decoder.parameters():
         param.requires_grad_(False)
 
-    # Encoder, ODE, probe head all trainable
-    encoder.train()
-    ode_func.train()
-    probe_head.train()
-
     # ── Dataset ───────────────────────────────────────────────────────────────
     print("Building joint windows...")
     window_ds = ArgoJointWindowDataset(probe_dataset, WINDOW_SIZE, STRIDE)
@@ -115,7 +159,7 @@ def train_finetune(
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True,  num_workers=0)
     val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
-    # ── Optimizer — only trainable parameters ─────────────────────────────────
+    # ── Optimizer ─────────────────────────────────────────────────────────────
     trainable_params = (
         list(encoder.parameters()) +
         list(ode_func.parameters()) +
@@ -126,7 +170,7 @@ def train_finetune(
         optimizer, T_max=PROBE_EPOCHS, eta_min=1e-6
     )
 
-    logger        = LossLogger(log_path)
+    logger        = LossLogger(log_path, extras=["val_ts_raw", "val_ts_evo", "val_oxy"])
     best_val_loss = float("inf")
     os.makedirs(checkpoint_dir, exist_ok=True)
     ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
@@ -142,45 +186,17 @@ def train_finetune(
         train_loss = train_ts_raw = train_ts_evo = train_oxy = 0.0
 
         for batch in train_loader:
-            profile = batch["profile"].to(device)   # (B, W, D, n_vars)
+            profile = batch["profile"].to(device)
             mask    = batch["mask"].to(device)
-            target  = batch["target"].to(device)    # (B, W, D, n_target)
+            target  = batch["target"].to(device)
             lat     = batch["lat"].to(device)
             lon     = batch["lon"].to(device)
 
-            B, W, D, n_in = profile.shape
-
-            # encode all cycles
-            profile_flat = profile.reshape(B * W, D, n_in)
-            mask_flat    = mask.reshape(B * W, D, n_in)
-            p_flat       = encoder(profile_flat, mask_flat)        # (B*W, latent_dim)
-            p            = p_flat.reshape(B, W, LATENT_DIM)        # (B, W, latent_dim)
-
-            # T/S reconstruction from raw encoder output (clean signal)
-            recon_raw  = decoder(p_flat, depth_tensor)             # (B*W, D, n_vars)
-            profile_target = profile_flat * mask_flat.float()      # zero out missing
-            loss_ts_raw = masked_mse(recon_raw * mask_flat.float(), profile_target)
-
-            # ODE rollout from first cycle
-            lat0 = lat[:, 0:1]
-            lon0 = lon[:, 0:1]
-            z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
-
-            z_pred      = odeint(ode_func, z0, t_grid, method="dopri5",
-                                 rtol=ODE_RTOL, atol=ODE_ATOL)
-            p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)  # (B, W, latent_dim)
-            p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
-
-            # T/S reconstruction from ODE-evolved latent (interpretability signal)
-            recon_evo   = decoder(p_pred_flat, depth_tensor)
-            loss_ts_evo = masked_mse(recon_evo * mask_flat.float(), profile_target)
-
-            # Oxygen prediction from ODE-evolved latent
-            target_flat = target.reshape(B * W, D, target.shape[-1])
-            oxy_pred    = probe_head(p_pred_flat, depth_tensor)
-            loss_oxy    = masked_mse(oxy_pred, target_flat)
-
-            loss = loss_ts_raw + LAMBDA_ODE * loss_ts_evo + LAMBDA_OXY * loss_oxy
+            loss, loss_ts_raw, loss_ts_evo, loss_oxy = _forward(
+                encoder, decoder, ode_func, probe_head,
+                profile, mask, target, lat, lon,
+                depth_tensor, t_grid, device,
+            )
 
             optimizer.zero_grad()
             loss.backward()
@@ -212,34 +228,11 @@ def train_finetune(
                 lat     = batch["lat"].to(device)
                 lon     = batch["lon"].to(device)
 
-                B, W, D, n_in = profile.shape
-
-                profile_flat = profile.reshape(B * W, D, n_in)
-                mask_flat    = mask.reshape(B * W, D, n_in)
-                p_flat       = encoder(profile_flat, mask_flat)
-                p            = p_flat.reshape(B, W, LATENT_DIM)
-
-                recon_raw   = decoder(p_flat, depth_tensor)
-                profile_target = profile_flat * mask_flat.float()
-                loss_ts_raw = masked_mse(recon_raw * mask_flat.float(), profile_target)
-
-                lat0 = lat[:, 0:1]
-                lon0 = lon[:, 0:1]
-                z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
-
-                z_pred      = odeint(ode_func, z0, t_grid, method="dopri5",
-                                     rtol=ODE_RTOL, atol=ODE_ATOL)
-                p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
-                p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
-
-                recon_evo   = decoder(p_pred_flat, depth_tensor)
-                loss_ts_evo = masked_mse(recon_evo * mask_flat.float(), profile_target)
-
-                target_flat = target.reshape(B * W, D, target.shape[-1])
-                oxy_pred    = probe_head(p_pred_flat, depth_tensor)
-                loss_oxy    = masked_mse(oxy_pred, target_flat)
-
-                loss = loss_ts_raw + LAMBDA_ODE * loss_ts_evo + LAMBDA_OXY * loss_oxy
+                loss, loss_ts_raw, loss_ts_evo, loss_oxy = _forward(
+                    encoder, decoder, ode_func, probe_head,
+                    profile, mask, target, lat, lon,
+                    depth_tensor, t_grid, device,
+                )
 
                 val_loss   += loss.item()
                 val_ts_raw += loss_ts_raw.item()
@@ -264,7 +257,10 @@ def train_finetune(
             f"time={elapsed:.1f}s"
         )
 
-        logger.log(epoch, train_loss, val_loss)
+        logger.log(epoch, train_loss, val_loss,
+                   val_ts_raw=val_ts_raw,
+                   val_ts_evo=val_ts_evo,
+                   val_oxy=val_oxy)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
