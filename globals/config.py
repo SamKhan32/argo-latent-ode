@@ -32,6 +32,8 @@ LATENT_DIM     = 32         # dimension of latent profile vector p
 ENCODER_HIDDEN = [128, 128]   # hidden layer sizes in encoder MLP
 DECODER_HIDDEN = [64, 64]   # hidden layer sizes in decoder MLP
 ODE_HIDDEN     = [128, 128,128]   # hidden layer sizes in ODE function f(p, lat, lon, t)
+LAMBDA_ODE = 0.5   # weight for ODE-evolved T/S recon loss
+LAMBDA_OXY = 0.5   # weight for oxygen probe loss
 
 ## Training ##
 ENCODER_LR     = 1e-3
@@ -44,3 +46,4 @@ PROBE_EPOCHS = 100
 
 WINDOW_SIZE = 75
 STRIDE = 2
+

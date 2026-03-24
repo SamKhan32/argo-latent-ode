@@ -17,7 +17,7 @@ from experiments.training.train_probe_baseline import train_probe_baseline
 from experiments.training.train_gru import train_gru
 from experiments.training.train_gru_probe import train_gru_probe
 from experiments.evaluation.extrapolation import run_extrapolation
-
+from experiments.training.train_finetune import train_finetune
 
 ## Stages ##
 
@@ -128,10 +128,22 @@ def stage_gru_probe(
 def stage_extrapolation(latent_path="checkpoints/latent_cycles.pt"):
     print("=== Stage: extrapolation ===")
     return run_extrapolation(latent_path=latent_path)
-
+def stage_finetune(
+    autoencoder_checkpoint="checkpoints/autoencoder_best.pt",
+    ode_checkpoint="checkpoints/ode_best.pt",
+    probe_checkpoint="checkpoints/probe_head_best.pt",
+):
+    print("=== Stage: finetune ===")
+    probe_ds, _, _ = _load_probe_dataset(autoencoder_checkpoint)
+    return train_finetune(
+        probe_ds,
+        autoencoder_checkpoint=autoencoder_checkpoint,
+        ode_checkpoint=ode_checkpoint,
+        probe_checkpoint=probe_checkpoint,
+    )
 ## Main ##
 
-STAGES = ["split", "encoder", "encode", "ode", "probe", "probe_baseline", "gru", "gru_probe","extrapolation", "all"]
+STAGES = ["split", "encoder", "encode", "ode", "probe", "probe_baseline", "gru", "gru_probe","extrapolation", "finetune","all"]
 
 def main():
     parser = argparse.ArgumentParser(description="Ocean Dynamics Latent ODE pipeline")
@@ -160,6 +172,8 @@ def main():
         stage_gru_probe(args.checkpoint, args.gru_checkpoint)
     elif args.stage == "extrapolation":
         stage_extrapolation(args.latent)
+    elif args.stage == "finetune":
+        stage_finetune(args.checkpoint, args.ode_checkpoint, args.gru_checkpoint)
     elif args.stage == "all":
         stage_split()
         checkpoint_path = stage_encoder()
