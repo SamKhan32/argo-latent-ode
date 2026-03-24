@@ -1,9 +1,13 @@
 import numpy as np
 
 ## Data paths ##
-LOW_DRIFT_PATH = "data/processed/all_low_drift_oxygen_devices.csv"
-PFL1_PATH      = "data/processed/PFL1_preprocessed.csv"
+#LOW_DRIFT_PATH = "data/processed/all_low_drift_oxygen_devices.csv"
+#PFL1_PATH      = "data/processed/PFL1_preprocessed.csv"
 INTERP_PATH    = "data/processed/PFL1_interp72.csv"  # split.py handles PFL2/3 internally
+
+LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
+INTERP_PATH    = "data/processed/PFL1_interp72.csv"
+
 ## Variables ##
 INPUT_VARS       = ['Temperature', 'Salinity']   # encoder inputs (X)
 TARGET_VARS      = ['Oxygen']                          # held-out reconstruction target (Y)

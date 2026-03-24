@@ -7,11 +7,6 @@ from globals.config import (
     TARGET_VARS, MIN_TARGET_PROBE,
 )
 
-# Additional PFL interp paths — loaded and merged in build_splits
-PFL2_INTERP_PATH = "data/processed/PFL2_interp72.csv"
-PFL3_INTERP_PATH = "data/processed/PFL3_interp72.csv"
-ALL_LOW_DRIFT_PATH = "data/processed/all_low_drift_oxygen_devices.csv"
-
 
 ## Region assignment ##
 
@@ -29,11 +24,6 @@ def assign_ocean_region(lat, lon):
 ## Float-level metadata ##
 
 def get_float_level_metadata(low_drift_df, pfl_df):
-    """
-    One row per float. Adds:
-      - region  : ocean region from start position
-      - has_o2  : whether the float has any TARGET_VARS observations
-    """
     float_meta = low_drift_df[["WMO_ID", "start_lat", "start_lon"]].copy()
     float_meta["region"] = float_meta.apply(
         lambda r: assign_ocean_region(r["start_lat"], r["start_lon"]), axis=1
@@ -57,7 +47,6 @@ def stratified_float_split(float_meta, train_frac=TRAIN_FRAC, test_frac=TEST_FRA
     rng = np.random.default_rng(seed)
     split_map = {"train": [], "test": [], "probe": []}
 
-    # --- Step 1: reserve target floats for probe ---
     target_floats = float_meta[float_meta["has_o2"]].copy()
 
     reserved_probe = []
@@ -78,7 +67,6 @@ def stratified_float_split(float_meta, train_frac=TRAIN_FRAC, test_frac=TEST_FRA
     split_map["probe"].extend(reserved_probe)
     reserved_set = set(reserved_probe)
 
-    # --- Step 2: stratified split on remaining floats ---
     remaining = float_meta[~float_meta["WMO_ID"].isin(reserved_set)].copy()
 
     for region, group in remaining.groupby("region"):
@@ -136,31 +124,14 @@ def verify_split(pfl_filtered, float_meta, split_map):
 
 ## Entry point ##
 
-def build_splits(low_drift_path=ALL_LOW_DRIFT_PATH, interp_path=INTERP_PATH):
-    """
-    Full pipeline: load and merge interpolated data from PFL1/2/3,
-    filter to low-drift O2 floats, O2-aware split at float level,
-    return annotated depth-level dataframe.
-    """
-    print("Loading low-drift float list...")
+def build_splits(low_drift_path=LOW_DRIFT_PATH, interp_path=INTERP_PATH):
     low_drift_df = pd.read_csv(low_drift_path)
-
-    print("Loading interpolated profiles...")
-    pfl1 = pd.read_csv(interp_path, low_memory=False)
-    pfl2 = pd.read_csv(PFL2_INTERP_PATH, low_memory=False)
-    pfl3 = pd.read_csv(PFL3_INTERP_PATH, low_memory=False)
-
-    pfl_df = pd.concat([pfl1, pfl2, pfl3], ignore_index=True)
-
-    # deduplicate in case the same cast appears across PFL files
-    before = len(pfl_df)
-    pfl_df = pfl_df.drop_duplicates(subset=["wod_unique_cast", "z"])
-    print(f"Duplicate rows removed: {before - len(pfl_df):,}")
+    pfl_df       = pd.read_csv(interp_path)
 
     low_drift_wmo_ids = low_drift_df["WMO_ID"].unique()
     pfl_filtered = pfl_df[pfl_df["WMO_ID"].isin(low_drift_wmo_ids)].copy()
 
-    print(f"\nLow drift floats:    {len(low_drift_wmo_ids)}")
+    print(f"Low drift floats:    {len(low_drift_wmo_ids)}")
     print(f"Depth observations:  {len(pfl_filtered):,}")
 
     float_meta = get_float_level_metadata(low_drift_df, pfl_filtered)
