@@ -1,0 +1,207 @@
+======================================================
+Start Time  : Mon Mar 23 05:46:35 PM EDT 2026
+Submit Dir  : /users/sphill86/ocean_dynamics_2
+Job ID/Name : 10454839 / ocean_latent_ode
+Partition   : GPU
+======================================================
+=== Stage: split ===
+Low drift floats:    140
+Depth observations:  1121134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  95 floats  (16 with O2)
+  test  :  25 floats  (6 with O2)
+  probe :  20 floats  (12 with O2)
+
+Row counts by split:
+split
+train    752849
+probe    206371
+test     161914
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                10    17     59
+Split complete.
+=== Stage: encoder ===
+Using device: cuda
+Low drift floats:    140
+Depth observations:  1121134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  95 floats  (16 with O2)
+  test  :  25 floats  (6 with O2)
+  probe :  20 floats  (12 with O2)
+
+Row counts by split:
+split
+train    752849
+probe    206371
+test     161914
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                10    17     59
+Epoch   1/40  train=1.0665  val=0.0351  time=11.2s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0351)
+Epoch   2/40  train=0.0307  val=0.0337  time=10.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0337)
+Epoch   3/40  train=0.0279  val=0.0283  time=10.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0283)
+Epoch   4/40  train=0.0236  val=0.0293  time=9.9s
+Epoch   5/40  train=0.0215  val=0.0230  time=10.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0230)
+Epoch   6/40  train=0.0211  val=0.0196  time=10.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0196)
+Epoch   7/40  train=0.0185  val=0.0179  time=10.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0179)
+Epoch   8/40  train=0.0186  val=0.0169  time=10.4s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0169)
+Epoch   9/40  train=0.0197  val=0.0295  time=10.1s
+Epoch  10/40  train=0.0178  val=0.0255  time=10.0s
+Epoch  11/40  train=0.0201  val=0.0184  time=10.0s
+Epoch  12/40  train=0.0160  val=0.0345  time=10.2s
+Epoch  13/40  train=0.0176  val=0.0144  time=9.6s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0144)
+Epoch  14/40  train=0.0189  val=0.0250  time=9.9s
+Epoch  15/40  train=0.0154  val=0.0252  time=10.0s
+Epoch  16/40  train=0.0185  val=0.0120  time=10.2s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0120)
+Epoch  17/40  train=0.0132  val=0.0257  time=10.0s
+Epoch  18/40  train=0.0176  val=0.0103  time=10.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0103)
+Epoch  19/40  train=0.0157  val=0.0155  time=10.1s
+Epoch  20/40  train=0.0142  val=0.0135  time=10.3s
+Epoch  21/40  train=0.0131  val=0.0142  time=10.1s
+Epoch  22/40  train=0.0133  val=0.0094  time=9.6s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0094)
+Epoch  23/40  train=0.0132  val=0.0226  time=9.9s
+Epoch  24/40  train=0.0132  val=0.0101  time=10.2s
+Epoch  25/40  train=0.0114  val=0.0141  time=10.1s
+Epoch  26/40  train=0.0150  val=0.0187  time=10.0s
+Epoch  27/40  train=0.0103  val=0.0115  time=10.1s
+Epoch  28/40  train=0.0102  val=0.0098  time=10.2s
+Epoch  29/40  train=0.0107  val=0.0113  time=10.0s
+Epoch  30/40  train=0.0111  val=0.0152  time=9.9s
+Epoch  31/40  train=0.0105  val=0.0093  time=9.6s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0093)
+Epoch  32/40  train=0.0095  val=0.0115  time=10.1s
+Epoch  33/40  train=0.0097  val=0.0087  time=9.9s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0087)
+Epoch  34/40  train=0.0087  val=0.0091  time=9.8s
+Epoch  35/40  train=0.0090  val=0.0124  time=10.0s
+Epoch  36/40  train=0.0089  val=0.0112  time=9.8s
+Epoch  37/40  train=0.0081  val=0.0081  time=9.8s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0081)
+Epoch  38/40  train=0.0090  val=0.0128  time=9.8s
+Epoch  39/40  train=0.0085  val=0.0221  time=10.1s
+Epoch  40/40  train=0.0089  val=0.0094  time=9.6s
+
+Encoder training complete. Best val loss: 0.0081
+Losses saved to: results/encoder_losses.csv
+=== Stage: encode ===
+Low drift floats:    140
+Depth observations:  1121134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  95 floats  (16 with O2)
+  test  :  25 floats  (6 with O2)
+  probe :  20 floats  (12 with O2)
+
+Row counts by split:
+split
+train    752849
+probe    206371
+test     161914
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                10    17     59
+Latent train: 10313 casts
+Latent val:   2218 casts
+Latent probe: 2827 casts
+Saved latent cycles to checkpoints/latent_cycles.pt
+=== Stage: ode ===
+Using device: cuda
+Loading latent cycles from checkpoints/latent_cycles.pt
+Building train windows...
+Train windows: 4111
+Building val windows...
+Val windows: 845
