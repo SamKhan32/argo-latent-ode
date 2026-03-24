@@ -1,2 +1,0 @@
-/users/sphill86/ocean_dynamics_2/data_cleaning/nc_to_csv.py:161: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
-  full_table = pd.concat(cast_tables, ignore_index=True)
