@@ -33,7 +33,7 @@ class LossLogger:
         val_loss   : float
         kwargs     : values for any extra columns declared at init
         """
-        extra_vals = [f"{kwargs[k]:.6f}" if k in kwargs else "" for k in self.extras]
+        extra_vals = [f"{kwargs[k]:.6f}" if isinstance(kwargs[k], float) else str(kwargs[k]) for k in self.extras if k in kwargs]
         with open(self.path, "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([epoch, f"{train_loss:.6f}", f"{val_loss:.6f}"] + extra_vals)

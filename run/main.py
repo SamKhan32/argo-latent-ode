@@ -18,6 +18,7 @@ from experiments.training.train_gru import train_gru
 from experiments.training.train_gru_probe import train_gru_probe
 from experiments.evaluation.extrapolation import run_extrapolation
 from experiments.training.train_finetune import train_finetune
+from experiments.training.train_node_curriculum import train_ode_curriculum
 from utils.seeding import set_seed
 from data.split import build_splits
 from data.datasets import ArgoProbeDataset
@@ -76,6 +77,9 @@ def stage_ode(latent_path="checkpoints/latent_cycles.pt"):
     print("=== Stage: ode ===")
     return train_ode(latent_path=latent_path)
 
+def stage_ode_curriculum(latent_path="checkpoints/latent_cycles.pt"):
+    print("=== Stage: ode_curriculum ===")
+    return train_ode_curriculum(latent_path=latent_path)
 
 def _load_probe_dataset(autoencoder_checkpoint):
     """Helper — build probe dataset with consistent normalization stats."""
@@ -157,7 +161,7 @@ def stage_finetune(
     )
 ## Main ##
 
-STAGES = ["split", "encoder", "encode", "ode", "probe", "probe_baseline", "gru", "gru_probe","extrapolation", "finetune","all"]
+STAGES = ["split", "encoder", "encode", "ode", "probe", "probe_baseline", "gru", "gru_probe","extrapolation", "finetune","all","ode_curriculum"] 
 
 def main():
     parser = argparse.ArgumentParser(description="Ocean Dynamics Latent ODE pipeline")
@@ -189,6 +193,8 @@ def main():
         stage_extrapolation(args.latent)
     elif args.stage == "finetune":
         stage_finetune(args.checkpoint, args.ode_checkpoint, args.probe_checkpoint)
+    elif args.stage == "ode_curriculum":
+        stage_ode_curriculum(args.latent)
     elif args.stage == "all":
         stage_split()
         checkpoint_path = stage_encoder()
