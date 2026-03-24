@@ -38,11 +38,11 @@ LAMBDA_OXY = 0.5   # weight for oxygen probe loss
 ENCODER_LR     = 1e-3
 ENCODER_EPOCHS = 40
 ODE_LR         = 5e-4 
-ODE_EPOCHS     = 40
+ODE_EPOCHS     = 15
 BATCH_SIZE     = 32
 PROBE_LR = 1e-4
 PROBE_EPOCHS = 100
 
-WINDOW_SIZE = 75
+WINDOW_SIZE = 25
 STRIDE = 2
 

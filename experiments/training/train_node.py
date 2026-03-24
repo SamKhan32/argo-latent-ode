@@ -23,6 +23,7 @@ ODE_ATOL = 1e-5
 
 T_GRID = torch.arange(0, WINDOW_SIZE, dtype=torch.float32) * 10.0
 
+
 class SlidingWindowDataset(Dataset):
 
     def __init__(self, latent_dataset, window_size=WINDOW_SIZE, stride=STRIDE):
@@ -85,6 +86,9 @@ def train_ode(
 
     ode_func  = ODEFunc().to(device)
     optimizer = torch.optim.Adam(ode_func.parameters(), lr=ODE_LR)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=ODE_EPOCHS, eta_min=1e-6
+    )
     loss_fn   = nn.MSELoss()
 
     logger        = LossLogger(log_path)
@@ -142,8 +146,9 @@ def train_ode(
 
         val_loss /= len(val_loader)
 
-        elapsed = time.time() - t_start
-        print(f"Epoch {epoch:3d}/{ODE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  time={elapsed:.1f}s")
+        elapsed    = time.time() - t_start
+        current_lr = scheduler.get_last_lr()[0]
+        print(f"Epoch {epoch:3d}/{ODE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  lr={current_lr:.2e}  time={elapsed:.1f}s")
 
         logger.log(epoch, train_loss, val_loss)
 
@@ -151,6 +156,8 @@ def train_ode(
             best_val_loss = val_loss
             torch.save({"model_state": ode_func.state_dict()}, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
+
+        scheduler.step()
 
     print(f"\nNODE training complete. Best val loss: {best_val_loss:.4f}")
     print(f"Losses saved to: {log_path}")
