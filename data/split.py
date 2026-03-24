@@ -7,6 +7,11 @@ from globals.config import (
     TARGET_VARS, MIN_TARGET_PROBE,
 )
 
+# Additional PFL interp paths — loaded and merged in build_splits
+PFL2_INTERP_PATH = "data/processed/PFL2_interp72.csv"
+PFL3_INTERP_PATH = "data/processed/PFL3_interp72.csv"
+ALL_LOW_DRIFT_PATH = "data/processed/all_low_drift_oxygen_devices.csv"
+
 
 ## Region assignment ##
 
@@ -23,7 +28,7 @@ def assign_ocean_region(lat, lon):
 
 ## Float-level metadata ##
 
-def get_float_level_metadata(low_drift_df, pfl1_df):
+def get_float_level_metadata(low_drift_df, pfl_df):
     """
     One row per float. Adds:
       - region  : ocean region from start position
@@ -34,10 +39,9 @@ def get_float_level_metadata(low_drift_df, pfl1_df):
         lambda r: assign_ocean_region(r["start_lat"], r["start_lon"]), axis=1
     )
 
-    # flag floats that have at least one non-null observation in any target var
-    target_cols = [v for v in TARGET_VARS if v in pfl1_df.columns]
-    o2_wmo_ids = set(
-        pfl1_df[pfl1_df[target_cols].notna().any(axis=1)]["WMO_ID"].unique()
+    target_cols = [v for v in TARGET_VARS if v in pfl_df.columns]
+    o2_wmo_ids  = set(
+        pfl_df[pfl_df[target_cols].notna().any(axis=1)]["WMO_ID"].unique()
     )
     float_meta["has_o2"] = float_meta["WMO_ID"].isin(o2_wmo_ids)
 
@@ -48,14 +52,6 @@ def get_float_level_metadata(low_drift_df, pfl1_df):
 
 def stratified_float_split(float_meta, train_frac=TRAIN_FRAC, test_frac=TEST_FRAC,
                            probe_frac=PROBE_FRAC, seed=SEED):
-    """
-    Split floats into train / test / probe:
-      1. Reserve MIN_O2_PROBE O2 floats for probe first (spread across regions).
-      2. Run regional stratified split on the remaining floats.
-
-    This guarantees the probe set has enough O2 floats to evaluate the
-    held-out variable decoder regardless of random sampling.
-    """
     assert abs(train_frac + test_frac + probe_frac - 1.0) < 1e-6
 
     rng = np.random.default_rng(seed)
@@ -109,15 +105,13 @@ def stratified_float_split(float_meta, train_frac=TRAIN_FRAC, test_frac=TEST_FRA
 ## Utilities ##
 
 def assign_split(df, split_map):
-    """Add a 'split' column to a depth-level dataframe."""
     wmo_to_split = {wmo: split for split, wmos in split_map.items() for wmo in wmos}
     df = df.copy()
     df["split"] = df["WMO_ID"].map(wmo_to_split)
     return df
 
 
-def verify_split(pfl1_filtered, float_meta, split_map):
-    """Sanity checks and distribution report."""
+def verify_split(pfl_filtered, float_meta, split_map):
     for split_name, wmo_ids in split_map.items():
         other = np.concatenate([v for k, v in split_map.items() if k != split_name])
         assert len(set(wmo_ids) & set(other)) == 0, f"Overlap detected in {split_name}"
@@ -130,7 +124,7 @@ def verify_split(pfl1_filtered, float_meta, split_map):
         print(f"  {split_name:6s}: {len(wmo_ids):3d} floats  ({o2_count} with O2)")
 
     print("\nRow counts by split:")
-    print(pfl1_filtered["split"].value_counts())
+    print(pfl_filtered["split"].value_counts())
 
     print("\nFloat counts by region and split:")
     fm = float_meta.copy()
@@ -142,21 +136,34 @@ def verify_split(pfl1_filtered, float_meta, split_map):
 
 ## Entry point ##
 
-def build_splits(low_drift_path=LOW_DRIFT_PATH, interp_path=INTERP_PATH):
+def build_splits(low_drift_path=ALL_LOW_DRIFT_PATH, interp_path=INTERP_PATH):
     """
-    Full pipeline: load interpolated data, filter to low-drift floats,
-    O2-aware split at float level, return annotated depth-level dataframe.
+    Full pipeline: load and merge interpolated data from PFL1/2/3,
+    filter to low-drift O2 floats, O2-aware split at float level,
+    return annotated depth-level dataframe.
     """
+    print("Loading low-drift float list...")
     low_drift_df = pd.read_csv(low_drift_path)
-    pfl1_df      = pd.read_csv(interp_path)
+
+    print("Loading interpolated profiles...")
+    pfl1 = pd.read_csv(interp_path, low_memory=False)
+    pfl2 = pd.read_csv(PFL2_INTERP_PATH, low_memory=False)
+    pfl3 = pd.read_csv(PFL3_INTERP_PATH, low_memory=False)
+
+    pfl_df = pd.concat([pfl1, pfl2, pfl3], ignore_index=True)
+
+    # deduplicate in case the same cast appears across PFL files
+    before = len(pfl_df)
+    pfl_df = pfl_df.drop_duplicates(subset=["wod_unique_cast", "z"])
+    print(f"Duplicate rows removed: {before - len(pfl_df):,}")
 
     low_drift_wmo_ids = low_drift_df["WMO_ID"].unique()
-    pfl1_filtered = pfl1_df[pfl1_df["WMO_ID"].isin(low_drift_wmo_ids)].copy()
+    pfl_filtered = pfl_df[pfl_df["WMO_ID"].isin(low_drift_wmo_ids)].copy()
 
-    print(f"Low drift floats:    {len(low_drift_wmo_ids)}")
-    print(f"Depth observations:  {len(pfl1_filtered)}")
+    print(f"\nLow drift floats:    {len(low_drift_wmo_ids)}")
+    print(f"Depth observations:  {len(pfl_filtered):,}")
 
-    float_meta = get_float_level_metadata(low_drift_df, pfl1_filtered)
+    float_meta = get_float_level_metadata(low_drift_df, pfl_filtered)
 
     print("\nRegion distribution:")
     print(float_meta["region"].value_counts())
@@ -164,7 +171,7 @@ def build_splits(low_drift_path=LOW_DRIFT_PATH, interp_path=INTERP_PATH):
 
     split_map = stratified_float_split(float_meta)
 
-    pfl1_filtered = assign_split(pfl1_filtered, split_map)
-    verify_split(pfl1_filtered, float_meta, split_map)
+    pfl_filtered = assign_split(pfl_filtered, split_map)
+    verify_split(pfl_filtered, float_meta, split_map)
 
-    return pfl1_filtered, split_map
+    return pfl_filtered, split_map

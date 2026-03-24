@@ -1,7 +1,7 @@
 import numpy as np
 
 ## Data paths ##
-LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
+LOW_DRIFT_PATH = "data/processed/all_low_drift_oxygen_devices.csv"  # was PFL1_low_drift_devices.csv
 PFL1_PATH      = "data/processed/PFL1_preprocessed.csv"
 INTERP_PATH    = "data/processed/PFL1_interp72.csv"    # output of interpolate_depth_grid.py
 
