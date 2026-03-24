@@ -140,7 +140,7 @@ def stage_finetune(
     print("=== Stage: finetune ===")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    df, _      = build_splits(ALL_LOW_DRIFT_PATH, INTERP_PATH)
+    df, _      = build_splits(LOW_DRIFT_PATH, INTERP_PATH)
     train_ds   = ArgoProfileDataset(df, split="train")
     train_probe_ds = ArgoProbeDataset(df, split="train",  stats=train_ds.stats)
     probe_ds       = ArgoProbeDataset(df, split="probe",  stats=train_ds.stats)
