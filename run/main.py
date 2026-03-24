@@ -19,7 +19,7 @@ from experiments.training.train_gru_probe import train_gru_probe
 from experiments.evaluation.extrapolation import run_extrapolation
 from experiments.training.train_finetune import train_finetune
 from utils.seeding import set_seed
-from data.split import build_splits, ALL_LOW_DRIFT_PATH
+from data.split import build_splits
 from data.datasets import ArgoProbeDataset
 ## SEEDING ##
 set_seed()
