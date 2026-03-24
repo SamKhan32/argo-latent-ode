@@ -14,6 +14,9 @@ ts_recon_raw_loss     : decoder(encoder(T/S)) vs T/S  — clean encoder signal
 ts_recon_evolved_loss : decoder(ODE(p0))      vs T/S  — interpretability signal
 oxygen_loss           : probe_head(ODE(p0))   vs O2   — joint supervision signal
 
+Oxygen targets are z-scored using training data stats before loss computation
+to bring the oxygen loss to the same scale as T/S losses.
+
 Losses saved to results/finetune_losses.csv.
 
 Usage:
@@ -64,9 +67,26 @@ def masked_mse_oxy(pred, target):
     return ((pred - target)[mask] ** 2).mean()
 
 
+def compute_oxy_stats(train_ds):
+    """Compute oxygen mean and std from training windows for normalization."""
+    all_oxy = []
+    for idx in range(len(train_ds)):
+        item  = train_ds[idx]
+        target = item["target"]   # (W, D, n_target)
+        valid  = target[~torch.isnan(target)]
+        if len(valid) > 0:
+            all_oxy.append(valid)
+    all_oxy  = torch.cat(all_oxy)
+    oxy_mean = all_oxy.mean().item()
+    oxy_std  = all_oxy.std().item()
+    oxy_std  = oxy_std if oxy_std > 1e-6 else 1.0
+    return oxy_mean, oxy_std
+
+
 def _forward(encoder, decoder, ode_func, probe_head,
              profile, mask, target, lat, lon,
-             depth_tensor, t_grid, device):
+             depth_tensor, t_grid, device,
+             oxy_mean, oxy_std):
     """
     Shared forward pass for train and val loops.
     Returns (loss, loss_ts_raw, loss_ts_evo, loss_oxy).
@@ -96,10 +116,11 @@ def _forward(encoder, decoder, ode_func, probe_head,
     recon_evo   = decoder(p_pred_flat, depth_tensor)
     loss_ts_evo = masked_mse_ts(recon_evo, profile_flat, mask_flat.bool())
 
-    # Oxygen prediction from ODE-evolved latent
+    # Oxygen prediction from ODE-evolved latent — normalize target
     target_flat = target.reshape(B * W, D, target.shape[-1])
+    target_norm = (target_flat - oxy_mean) / oxy_std
     oxy_pred    = probe_head(p_pred_flat, depth_tensor)
-    loss_oxy    = masked_mse_oxy(oxy_pred, target_flat)
+    loss_oxy    = masked_mse_oxy(oxy_pred, target_norm)
 
     loss = loss_ts_raw + LAMBDA_ODE * loss_ts_evo + LAMBDA_OXY * loss_oxy
 
@@ -156,6 +177,11 @@ def train_finetune(
         generator=torch.Generator().manual_seed(SEED),
     )
 
+    # ── Oxygen normalization stats from training data ─────────────────────────
+    print("Computing oxygen normalization stats...")
+    oxy_mean, oxy_std = compute_oxy_stats(train_ds)
+    print(f"Oxygen stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
+
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True,  num_workers=0)
     val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
@@ -196,6 +222,7 @@ def train_finetune(
                 encoder, decoder, ode_func, probe_head,
                 profile, mask, target, lat, lon,
                 depth_tensor, t_grid, device,
+                oxy_mean, oxy_std,
             )
 
             optimizer.zero_grad()
@@ -232,6 +259,7 @@ def train_finetune(
                     encoder, decoder, ode_func, probe_head,
                     profile, mask, target, lat, lon,
                     depth_tensor, t_grid, device,
+                    oxy_mean, oxy_std,
                 )
 
                 val_loss   += loss.item()
@@ -268,6 +296,8 @@ def train_finetune(
                 "encoder_state":    encoder.state_dict(),
                 "ode_state":        ode_func.state_dict(),
                 "probe_head_state": probe_head.state_dict(),
+                "oxy_mean":         oxy_mean,
+                "oxy_std":          oxy_std,
             }, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
 
