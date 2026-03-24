@@ -199,7 +199,7 @@ def main():
         stage_split()
         checkpoint_path = stage_encoder()
         stage_encode(checkpoint_path, args.latent)
-        stage_ode(args.latent)
+        stage_ode_curriculum(args.latent)
         stage_gru(args.latent)
         stage_probe(checkpoint_path, args.ode_checkpoint)
         stage_probe_baseline(checkpoint_path)

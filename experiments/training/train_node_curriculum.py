@@ -76,7 +76,7 @@ class SlidingWindowDataset(Dataset):
 def train_ode_curriculum(
     latent_path="checkpoints/latent_cycles.pt",
     checkpoint_dir="checkpoints",
-    checkpoint_name="ode_curriculum_best.pt",
+    checkpoint_name="ode_best.pt",
     log_path="results/node_curriculum_losses.csv",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

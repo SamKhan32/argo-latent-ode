@@ -9,13 +9,13 @@ LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
 INTERP_PATH    = "data/processed/PFL1_interp72.csv"
 
 ## Variables ##
-INPUT_VARS       = ['Temperature', 'Salinity']   # encoder inputs (X)
-TARGET_VARS      = ['Oxygen']                          # held-out reconstruction target (Y)
-ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']  # all sensor vars to interpolate
-MIN_TARGET_PROBE = 8                                   # guaranteed floats with target coverage in probe set
+INPUT_VARS       = ['Temperature', 'Salinity']
+TARGET_VARS      = ['Oxygen']
+ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']
+MIN_TARGET_PROBE = 8
 
 ## Data ##
-DEPTH_STRIDE = 1   # only used with PFL1_PATH (raw data) — not needed with INTERP_PATH, kept at 1 because we use grids now.
+DEPTH_STRIDE = 1
 
 ## Interpolation grid (73 levels, 0–2000m) ##
 DEPTH_GRID = np.concatenate([
@@ -31,23 +31,25 @@ PROBE_FRAC = 0.10
 SEED       = 42
 
 ## Model hyperparameters ##
-LATENT_DIM     = 32         # dimension of latent profile vector p
-ENCODER_HIDDEN = [128, 128]   # hidden layer sizes in encoder MLP
-DECODER_HIDDEN = [64, 64]   # hidden layer sizes in decoder MLP
-ODE_HIDDEN     = [128, 128,128]   # hidden layer sizes in ODE function f(p, lat, lon, t)
-LAMBDA_ODE = 0.5   # weight for ODE-evolved T/S recon loss
-LAMBDA_OXY = 0.5   # weight for oxygen probe loss
+LATENT_DIM     = 32
+ENCODER_HIDDEN = [128, 128]
+DECODER_HIDDEN = [64, 64]
+ODE_HIDDEN     = [256, 256, 256]  # increased from [128, 128, 128]
+LAMBDA_ODE     = 0.5
+LAMBDA_OXY     = 0.5
 
 ## Training ##
 ENCODER_LR     = 1e-3
-ENCODER_EPOCHS = 40
-ODE_LR         = 5e-4 
-ODE_EPOCHS     = 100
+ENCODER_EPOCHS = 80               # increased from 40 — oscillation fix + cosine annealing
+ODE_LR         = 5e-4
+ODE_EPOCHS     = 200              # increased from 100 — more room for curriculum phases
 BATCH_SIZE     = 32
-PROBE_LR = 1e-4
-PROBE_EPOCHS = 100
+PROBE_LR       = 1e-4
+PROBE_EPOCHS   = 150              # increased from 100 — probe was still converging at 100
 
 WINDOW_SIZE = 25
-STRIDE = 2
+STRIDE      = 2
 
-CURRICULUM_WINDOWS = [5, 10, 20, 25]
+CURRICULUM_WINDOWS  = [5, 10, 20, 25]
+CURRICULUM_WEIGHTS  = [0.15, 0.20, 0.25, 0.40]  # epoch fractions per phase
+# gives: 30, 40, 50, 80 epochs for windows 5, 10, 20, 25
