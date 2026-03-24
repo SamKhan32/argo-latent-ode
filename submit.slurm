@@ -25,7 +25,6 @@ mkdir -p logs checkpoints results
 
 source ~/envs/ocean/bin/activate
 export PYTHONPATH=$SLURM_SUBMIT_DIR${PYTHONPATH:+:$PYTHONPATH}
-python -u run/main.py --stage encoder
 python -u run/main.py --stage all
 python -u run/main.py --stage extrapolation
 #python -u run/main.py --stage gru && python -u run/main.py --stage gru_probe
