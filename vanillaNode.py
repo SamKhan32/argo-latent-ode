@@ -45,40 +45,20 @@ np.random.seed(SEED)
 # ---------------------------------------------------------------------------
 
 def load_profile_sequences(csv_path: str):
-    """
-    Load PFL1_interp72.csv and build per-float profile sequences.
-
-    Returns a list of dicts:
-        {
-            'profiles': np.ndarray  shape (T, 146)  -- normalized T/S
-            'times':    np.ndarray  shape (T,)       -- decimal days since first profile
-            'wmo_id':   str
-        }
-    Only floats with >= WINDOW_SIZE + EXTRAP_STEPS profiles are kept.
-    """
     df = pd.read_csv(csv_path)
-
-    # Parse datetime
-    df["datetime"] = pd.to_datetime(df["date"].astype(str) + " " + df["GMT_time"].astype(str),
-                                    errors="coerce")
+    df["datetime"] = pd.to_datetime(df["time"], errors="coerce")
     df = df.dropna(subset=["datetime"])
-
-    # Sort
     df = df.sort_values(["WMO_ID", "datetime", "z"]).reset_index(drop=True)
 
-    # Compute per-variable normalization stats (train split done later, but
-    # we normalize globally here for simplicity — consistent with latent pipeline)
     t_mean, t_std = df["Temperature"].mean(), df["Temperature"].std()
     s_mean, s_std = df["Salinity"].mean(),    df["Salinity"].std()
-
     stats = dict(t_mean=t_mean, t_std=t_std, s_mean=s_mean, s_std=s_std)
 
     sequences = []
     min_len = WINDOW_SIZE + EXTRAP_STEPS
 
     for wmo_id, float_df in df.groupby("WMO_ID"):
-        # Each cast = one profile; pivot depth levels into a row
-        cast_groups = float_df.groupby("castIndex", sort=True)
+        cast_groups = float_df.groupby("wod_unique_cast", sort=True)
         casts = sorted(cast_groups.groups.keys())
 
         if len(casts) < min_len:
@@ -86,39 +66,36 @@ def load_profile_sequences(csv_path: str):
 
         profiles = []
         times    = []
-        t0 = None
+        t0       = None
 
-        for cast_idx in casts:
-            cast = cast_groups.get_group(cast_idx).sort_values("z")
+        for cast_key in casts:
+            cast = cast_groups.get_group(cast_key).sort_values("z")
 
-            # Expect exactly N_DEPTHS rows per cast after interpolation
             if len(cast) != N_DEPTHS:
                 continue
 
             temp = (cast["Temperature"].values - t_mean) / (t_std + 1e-8)
             sal  = (cast["Salinity"].values    - s_mean) / (s_std + 1e-8)
-
-            profile = np.concatenate([temp, sal]).astype(np.float32)  # (146,)
+            profile = np.concatenate([temp, sal]).astype(np.float32)
             profiles.append(profile)
 
             dt = cast["datetime"].iloc[0]
             if t0 is None:
                 t0 = dt
-            times.append((dt - t0).total_seconds() / 86400.0)  # days
+            times.append((dt - t0).total_seconds() / 86400.0)
 
         if len(profiles) < min_len:
             continue
 
         sequences.append({
-            "profiles": np.stack(profiles),   # (T, 146)
+            "profiles": np.stack(profiles),
             "times":    np.array(times, dtype=np.float32),
             "wmo_id":   str(wmo_id),
         })
 
-    print(f"Loaded {len(sequences)} floats from {csv_path}  "
-          f"(norm: T μ={t_mean:.2f} σ={t_std:.2f}, S μ={s_mean:.2f} σ={s_std:.2f})")
+    print(f"Loaded {len(sequences)} floats  "
+          f"(T μ={t_mean:.2f} σ={t_std:.2f}, S μ={s_mean:.2f} σ={s_std:.2f})")
     return sequences, stats
-
 
 def train_val_split(sequences, val_frac=VAL_FRAC, seed=SEED):
     rng = np.random.default_rng(seed)
