@@ -18,9 +18,14 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torchdiffeq import odeint
 import matplotlib.pyplot as plt
-from globals.config import INTERP_PATH, ODE_HIDDEN, BATCH_SIZE, SEED
-DEVICE      = "cuda"
-RESULTS_DIR = "results/vanilla"
+from config1 import (
+    INTERP_CSV,          # path to PFL1_interp72.csv
+    ODE_HIDDEN,          # [128, 128, 128]
+    CURRICULUM_WINDOWS,  # not used here, kept for reference
+    DEVICE,
+    RESULTS_DIR,
+)
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -32,7 +37,7 @@ INPUT_VARS  = ["Temperature", "Salinity"]
 WINDOW_SIZE = 10          # profiles per training subsequence
 EXTRAP_STEPS = 5          # how many steps ahead to evaluate extrapolation
 BATCH_SIZE  = 32
-N_EPOCHS    = 75
+N_EPOCHS    = 150
 LR          = 1e-3
 VAL_FRAC    = 0.15
 SEED        = 42
@@ -45,20 +50,40 @@ np.random.seed(SEED)
 # ---------------------------------------------------------------------------
 
 def load_profile_sequences(csv_path: str):
+    """
+    Load PFL1_interp72.csv and build per-float profile sequences.
+
+    Returns a list of dicts:
+        {
+            'profiles': np.ndarray  shape (T, 146)  -- normalized T/S
+            'times':    np.ndarray  shape (T,)       -- decimal days since first profile
+            'wmo_id':   str
+        }
+    Only floats with >= WINDOW_SIZE + EXTRAP_STEPS profiles are kept.
+    """
     df = pd.read_csv(csv_path)
-    df["datetime"] = pd.to_datetime(df["time"], errors="coerce")
+
+    # Parse datetime
+    df["datetime"] = pd.to_datetime(df["date"].astype(str) + " " + df["GMT_time"].astype(str),
+                                    errors="coerce")
     df = df.dropna(subset=["datetime"])
+
+    # Sort
     df = df.sort_values(["WMO_ID", "datetime", "z"]).reset_index(drop=True)
 
+    # Compute per-variable normalization stats (train split done later, but
+    # we normalize globally here for simplicity — consistent with latent pipeline)
     t_mean, t_std = df["Temperature"].mean(), df["Temperature"].std()
     s_mean, s_std = df["Salinity"].mean(),    df["Salinity"].std()
+
     stats = dict(t_mean=t_mean, t_std=t_std, s_mean=s_mean, s_std=s_std)
 
     sequences = []
     min_len = WINDOW_SIZE + EXTRAP_STEPS
 
     for wmo_id, float_df in df.groupby("WMO_ID"):
-        cast_groups = float_df.groupby("wod_unique_cast", sort=True)
+        # Each cast = one profile; pivot depth levels into a row
+        cast_groups = float_df.groupby("castIndex", sort=True)
         casts = sorted(cast_groups.groups.keys())
 
         if len(casts) < min_len:
@@ -66,36 +91,39 @@ def load_profile_sequences(csv_path: str):
 
         profiles = []
         times    = []
-        t0       = None
+        t0 = None
 
-        for cast_key in casts:
-            cast = cast_groups.get_group(cast_key).sort_values("z")
+        for cast_idx in casts:
+            cast = cast_groups.get_group(cast_idx).sort_values("z")
 
+            # Expect exactly N_DEPTHS rows per cast after interpolation
             if len(cast) != N_DEPTHS:
                 continue
 
             temp = (cast["Temperature"].values - t_mean) / (t_std + 1e-8)
             sal  = (cast["Salinity"].values    - s_mean) / (s_std + 1e-8)
-            profile = np.concatenate([temp, sal]).astype(np.float32)
+
+            profile = np.concatenate([temp, sal]).astype(np.float32)  # (146,)
             profiles.append(profile)
 
             dt = cast["datetime"].iloc[0]
             if t0 is None:
                 t0 = dt
-            times.append((dt - t0).total_seconds() / 86400.0)
+            times.append((dt - t0).total_seconds() / 86400.0)  # days
 
         if len(profiles) < min_len:
             continue
 
         sequences.append({
-            "profiles": np.stack(profiles),
+            "profiles": np.stack(profiles),   # (T, 146)
             "times":    np.array(times, dtype=np.float32),
             "wmo_id":   str(wmo_id),
         })
 
-    print(f"Loaded {len(sequences)} floats  "
-          f"(T μ={t_mean:.2f} σ={t_std:.2f}, S μ={s_mean:.2f} σ={s_std:.2f})")
+    print(f"Loaded {len(sequences)} floats from {csv_path}  "
+          f"(norm: T μ={t_mean:.2f} σ={t_std:.2f}, S μ={s_mean:.2f} σ={s_std:.2f})")
     return sequences, stats
+
 
 def train_val_split(sequences, val_frac=VAL_FRAC, seed=SEED):
     rng = np.random.default_rng(seed)
@@ -242,9 +270,8 @@ def train_epoch(model, loader, optimizer, device, model_type="node"):
         optimizer.zero_grad()
 
         if model_type == "node":
-            # Use first profile as z0, integrate to all context time points
-            # Build a common time grid for the batch (use mean times)
-            t_grid = ctx_t.mean(dim=0)  # (W,) — shared time axis
+            t_end  = ctx_t[:, -1].mean().item()
+            t_grid = torch.linspace(0, t_end, WINDOW_SIZE, device=device)
             z0     = ctx_p[:, 0, :]     # (B, 146)
             pred   = model(z0, t_grid)  # (W, B, 146)
             pred   = pred.permute(1, 0, 2)  # (B, W, 146)
@@ -274,7 +301,8 @@ def eval_epoch(model, loader, device, model_type="node"):
         ctx_t = ctx_t.to(device)
 
         if model_type == "node":
-            t_grid = ctx_t.mean(dim=0)
+            t_end  = ctx_t[:, -1].mean().item()
+            t_grid = torch.linspace(0, t_end, WINDOW_SIZE, device=device)
             z0     = ctx_p[:, 0, :]
             pred   = model(z0, t_grid).permute(1, 0, 2)
             loss   = nn.functional.mse_loss(pred, ctx_p)
@@ -300,9 +328,9 @@ def eval_extrapolation(model, loader, device, model_type="node"):
         tgt_t = tgt_t.to(device)
 
         if model_type == "node":
-            # Integrate from z0 through context + extrap time points
-            all_t  = torch.cat([ctx_t.mean(0), tgt_t.mean(0)], dim=0)  # (W+E,)
-            z0     = ctx_p[:, 0, :]
+            t_end = tgt_t[:, -1].mean().item()
+            all_t = torch.linspace(0, t_end, WINDOW_SIZE + EXTRAP_STEPS, device=device)
+            z0    = ctx_p[:, 0, :]
             traj   = model(z0, all_t).permute(1, 0, 2)  # (B, W+E, 146)
             pred   = traj[:, WINDOW_SIZE:, :]            # (B, E, 146)
         else:
@@ -322,7 +350,7 @@ def main():
     print(f"Device: {device}")
 
     # --- Data ---
-    sequences, stats = load_profile_sequences(INTERP_PATH)
+    sequences, stats = load_profile_sequences(INTERP_CSV)
     train_seqs, val_seqs = train_val_split(sequences)
 
     train_ds = ProfileSequenceDataset(train_seqs)
