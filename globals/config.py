@@ -16,7 +16,8 @@ MIN_TARGET_PROBE = 8
 
 ## Data ##
 DEPTH_STRIDE = 1
-
+DEVICE      = "cuda"
+RESULTS_DIR = "results/vanilla"
 ## Interpolation grid (73 levels, 0–2000m) ##
 DEPTH_GRID = np.concatenate([
     np.arange(0,    200,  10),    # 0, 10, 20, ... 190   (21 levels — mixed layer)
