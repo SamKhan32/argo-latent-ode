@@ -350,7 +350,7 @@ def main():
     print(f"Device: {device}")
 
     # --- Data ---
-    sequences, stats = load_profile_sequences(INTERP_CSV)
+    sequences, stats = load_profile_sequences(INTERP_PATH)
     train_seqs, val_seqs = train_val_split(sequences)
 
     train_ds = ProfileSequenceDataset(train_seqs)
