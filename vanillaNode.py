@@ -175,8 +175,8 @@ class VanillaNODE(nn.Module):
 
     def forward(self, z0: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         self.func.nfe = 0
-        
-        return odeint(self.func, z0, t, method="dopri5", rtol=1e-4, atol=1e-5)
+        return odeint(self.func, z0.double(), t.double(), method="dopri5",
+                    rtol=1e-4, atol=1e-5).float()
 
 
 class VanillaGRU(nn.Module):
