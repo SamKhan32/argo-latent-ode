@@ -174,9 +174,7 @@ class VanillaNODE(nn.Module):
         self.func = ODEFunc(dim, hidden)
     def forward(self, z0: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         self.func.nfe = 0
-        self.func.double()
-        return odeint(self.func, z0.double(), t.double(), method="dopri5",
-                    rtol=1e-4, atol=1e-5).float()
+        return odeint(self.func, z0, t, method="rk4", options={"step_size": 1.0})
 
 
 class VanillaGRU(nn.Module):
