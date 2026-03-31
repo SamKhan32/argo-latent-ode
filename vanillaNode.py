@@ -19,7 +19,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchdiffeq import odeint
 import matplotlib.pyplot as plt
 from globals.config import (
-    INTERP_CSV,          # path to PFL1_interp72.csv
+    INTERP_PATH,          # path to PFL1_interp72.csv
     ODE_HIDDEN,          # [128, 128, 128]
     CURRICULUM_WINDOWS,  # not used here, kept for reference
     DEVICE,

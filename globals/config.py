@@ -6,7 +6,6 @@ import numpy as np
 INTERP_PATH    = "data/processed/PFL1_interp72.csv"  # split.py handles PFL2/3 internally
 
 LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
-INTERP_PATH    = "data/processed/PFL1_interp72.csv"
 
 ## Variables ##
 INPUT_VARS       = ['Temperature', 'Salinity']
