@@ -175,6 +175,7 @@ class VanillaNODE(nn.Module):
 
     def forward(self, z0: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         self.func.nfe = 0
+        
         return odeint(self.func, z0, t, method="dopri5", rtol=1e-4, atol=1e-5)
 
 
@@ -216,7 +217,11 @@ def train_epoch(model, loader, optimizer, device, model_type="node"):
 
         if model_type == "node":
             t_end  = ctx_t[:, -1].mean().item()
+            t_end  = ctx_t[:, -1].mean().item()
+            if t_end <= 0:
+                t_end = float(WINDOW_SIZE)  # fallback: 1 day per step
             t_grid = torch.linspace(0, t_end, WINDOW_SIZE, device=device)
+            print(f"t_end={t_end:.4f}  t_grid={t_grid}")  # <-- add here
             z0     = ctx_p[:, 0, :]
             pred   = model(z0, t_grid).permute(1, 0, 2)
             loss   = nn.functional.mse_loss(pred, ctx_p)
