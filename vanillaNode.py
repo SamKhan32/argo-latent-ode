@@ -223,6 +223,7 @@ def train_epoch(model, loader, optimizer, device, model_type="node"):
             z0     = ctx_p[:, 0, :]
             pred   = model(z0, t_grid).permute(1, 0, 2)
             loss   = nn.functional.mse_loss(pred, ctx_p)
+            print(f"batch loss: {loss.item():.6f}", flush=True)  # <-- add here
         else:
             inp  = ctx_p[:, :-1, :]
             tgt  = ctx_p[:, 1:,  :]
