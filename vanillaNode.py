@@ -322,7 +322,10 @@ def main():
         train_losses, val_losses = [], []
         best_val   = float("inf")
         best_state = None
-
+        for ctx_p, ctx_t, _, _ in train_loader:
+            print(f"ctx_p nan: {torch.isnan(ctx_p).any()}, inf: {torch.isinf(ctx_p).any()}")
+            print(f"ctx_p min: {ctx_p.min():.4f}, max: {ctx_p.max():.4f}")
+            break
         for epoch in range(1, N_EPOCHS + 1):
             t0 = time.time()
             tr_loss = train_epoch(model, train_loader, optimizer, device, model_type)
