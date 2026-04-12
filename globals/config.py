@@ -8,10 +8,10 @@ INTERP_PATH    = "data/processed/PFL1_interp72.csv"  # split.py handles PFL2/3 i
 LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
 
 ## Variables ##
-INPUT_VARS       = ['Temperature', 'Salinity']
-TARGET_VARS      = ['Oxygen']
+INPUT_VARS       = ['Temperature', 'Salinity','Oxygen']
+TARGET_VARS      = ['Chlorophyll']
 ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']
-MIN_TARGET_PROBE = 8
+MIN_TARGET_PROBE = 4
 
 ## Data ##
 DEPTH_STRIDE = 1
@@ -34,7 +34,7 @@ SEED       = 42
 LATENT_DIM     = 32
 ENCODER_HIDDEN = [128, 128]
 DECODER_HIDDEN = [64, 64]
-ODE_HIDDEN     = [256, 256, 256]  # increased from [128, 128, 128]
+ODE_HIDDEN     = [128, 128, 128]  # increased from [128, 128, 128]
 LAMBDA_ODE     = 0.5
 LAMBDA_OXY     = 0.5
 
@@ -42,14 +42,14 @@ LAMBDA_OXY     = 0.5
 ENCODER_LR     = 1e-3
 ENCODER_EPOCHS = 80               # increased from 40 — oscillation fix + cosine annealing
 ODE_LR         = 5e-4
-ODE_EPOCHS     = 200              # increased from 100 — more room for curriculum phases
+ODE_EPOCHS     = 100              # increased from 100 — more room for curriculum phases
 BATCH_SIZE     = 32
 PROBE_LR       = 1e-4
-PROBE_EPOCHS   = 150              # increased from 100 — probe was still converging at 100
+PROBE_EPOCHS   = 100             # increased from 100 — probe was still converging at 100
 
 WINDOW_SIZE = 25
 STRIDE      = 2
 
-CURRICULUM_WINDOWS  = [5, 10, 20, 25]
-CURRICULUM_WEIGHTS  = [0.15, 0.20, 0.25, 0.40]  # epoch fractions per phase
+CURRICULUM_WINDOWS  = [10]
+CURRICULUM_WEIGHTS  = [1.0]  # epoch fractions per phase
 # gives: 30, 40, 50, 80 epochs for windows 5, 10, 20, 25

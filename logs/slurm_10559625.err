@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "/users/sphill86/ocean_dynamics_2/vanillaNode.py", line 415, in <module>
-    main()
-  File "/users/sphill86/ocean_dynamics_2/vanillaNode.py", line 347, in main
-    model.load_state_dict(best_state)
-  File "/users/sphill86/envs/ocean/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 2556, in load_state_dict
-    raise TypeError(
-TypeError: Expected state_dict to be dict-like, got <class 'NoneType'>.
