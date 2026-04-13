@@ -66,8 +66,8 @@ def train_encoder(
             profile = batch["profile"].to(device)   # (B, D, n_vars)
             mask    = batch["mask"].to(device)       # (B, D, n_vars)
 
-            recon, _ = model(profile, mask, depth_tensor)
-            loss     = masked_mse(recon, profile, mask)
+            recon, p = model(profile, mask, depth_tensor)
+            loss = masked_mse(recon, profile, mask) + 1e-3 * (p ** 2).mean()  # L2 regularization on p
 
             optimizer.zero_grad()
             loss.backward()
