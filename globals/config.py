@@ -31,9 +31,9 @@ PROBE_FRAC = 0.10
 SEED       = 42
 
 ## Model hyperparameters ##
-LATENT_DIM     = 32
-ENCODER_HIDDEN = [128, 128]
-DECODER_HIDDEN = [64, 64]
+LATENT_DIM     = 16
+ENCODER_HIDDEN = [64, 64]
+DECODER_HIDDEN = [32, 32]
 ODE_HIDDEN     = [128, 128, 128]  # increased from [128, 128, 128]
 LAMBDA_ODE     = 0.5
 LAMBDA_OXY     = 0.5
