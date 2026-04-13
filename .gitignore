@@ -1,7 +1,6 @@
 data/original/*
 data/processed/*
 close_cast_pairs.csv
-checkpoints/*
 __pycache__
 __pycache__/
 *.pyc
