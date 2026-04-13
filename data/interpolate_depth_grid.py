@@ -25,7 +25,7 @@ from globals.config import (
 CAST_COL  = 'wod_unique_cast'
 DEPTH_COL = 'z'
 WMO_COL   = 'WMO_ID'
-META_COLS = ['date', 'GMT_time', 'lat', 'lon', WMO_COL, 'time']
+META_COLS = ['date', 'GMT_time', 'lat', 'lon', 'WMO_ID', 'time']
 
 
 def interpolate_cast(cast_df):

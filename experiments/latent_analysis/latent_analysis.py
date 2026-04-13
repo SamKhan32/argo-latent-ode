@@ -22,14 +22,12 @@ except ImportError:
     HAS_UMAP = False
     print("[warn] umap-learn not installed — skipping UMAP plots. pip install umap-learn")
 
-# ── output dir ────────────────────────────────────────────────────────────────
 FIGURE_DIR = os.path.join("experiments", "latent_analysis", "figures")
 os.makedirs(FIGURE_DIR, exist_ok=True)
 
 LATENT_PATH = os.path.join("checkpoints", "latent_cycles.pt")
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
 
 def save(name):
     path = os.path.join(FIGURE_DIR, name)
@@ -143,6 +141,8 @@ def plot_pca_by_season(P, ts):
     ax.set_xlabel("PC 1")
     ax.set_ylabel("PC 2")
     ax.set_title("Latent Space (PCA) — colored by Season")
+    ax.set_xscale("symlog", linthresh=0.5)
+    ax.set_yscale("symlog", linthresh=0.5)
     save("04_pca_season.png")
 
 
