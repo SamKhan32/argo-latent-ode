@@ -158,6 +158,7 @@ def train_ode_curriculum(
                 lat0 = lat[:, 0:1]
                 lon0 = lon[:, 0:1]
                 z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
+                optimizer.zero_grad()  # clear gradients first
 
                 z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
                                 rtol=ODE_RTOL, atol=ODE_ATOL)
@@ -165,7 +166,6 @@ def train_ode_curriculum(
                 p_pred = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
                 loss   = loss_fn(p_pred, p)
 
-                optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
