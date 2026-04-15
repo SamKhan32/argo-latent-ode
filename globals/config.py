@@ -50,11 +50,11 @@ ODE_EPOCHS     = 150                     # compensate with longer training
 
 BATCH_SIZE     = 64                      # reduce gradient noise
 
-PROBE_LR       = 5e-5                    # more conservative
+PROBE_LR       = 3e-5                    # more conservative
 PROBE_EPOCHS   = 120
 
 WINDOW_SIZE = 20                         # slightly shorter horizon
 STRIDE      = 2
 
-CURRICULUM_WINDOWS  = [5, 10, 20]
-CURRICULUM_WEIGHTS  = [0.3, 0.3, 0.4]    # gradual increase in difficulty
+CURRICULUM_WINDOWS  = [10]
+CURRICULUM_WEIGHTS  = [1.0]    # gradual increase in difficulty

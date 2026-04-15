@@ -204,7 +204,7 @@ def main():
         stage_probe(checkpoint_path, args.ode_checkpoint)
         stage_probe_baseline(checkpoint_path)
         stage_gru_probe(checkpoint_path, args.gru_checkpoint)
-        stage_finetune(args.checkpoint, args.ode_checkpoint, args.probe_checkpoint)
+        #stage_finetune(args.checkpoint, args.ode_checkpoint, args.probe_checkpoint)
 
 
 if __name__ == "__main__":
