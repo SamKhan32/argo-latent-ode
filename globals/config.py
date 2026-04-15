@@ -8,8 +8,8 @@ INTERP_PATH    = "data/processed/PFL1_interp72.csv"  # split.py handles PFL2/3 i
 LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
 
 ## Variables ##
-INPUT_VARS       = ['Temperature','Oxygen', 'Salinity']
-TARGET_VARS      = ['Chlorophyll']
+INPUT_VARS       = ['Temperature', 'Salinity']
+TARGET_VARS      = ['Oxygen']
 ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']
 MIN_TARGET_PROBE = 4
 
@@ -34,7 +34,7 @@ SEED       = 42
 LATENT_DIM     = 12                      # reduce capacity
 ENCODER_HIDDEN = [64, 64]
 DECODER_HIDDEN = [32, 32]
-ODE_HIDDEN     = [64, 64]                # much smaller, smoother dynamics
+ODE_HIDDEN     = [128, 128]                # much smaller, smoother dynamics
 
 LAMBDA_ODE     = 1.0                     # stronger regularization on dynamics
 LAMBDA_OXY     = 0.5
@@ -50,7 +50,7 @@ ODE_EPOCHS     = 150                     # compensate with longer training
 
 BATCH_SIZE     = 64                      # reduce gradient noise
 
-PROBE_LR       = 3e-5                    # more conservative
+PROBE_LR       = 2e-5                    # more conservative
 PROBE_EPOCHS   = 120
 
 WINDOW_SIZE = 20                         # slightly shorter horizon
