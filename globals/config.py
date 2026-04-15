@@ -31,25 +31,30 @@ PROBE_FRAC = 0.10
 SEED       = 42
 
 ## Model hyperparameters ##
-LATENT_DIM     = 16
+LATENT_DIM     = 12                      # reduce capacity
 ENCODER_HIDDEN = [64, 64]
 DECODER_HIDDEN = [32, 32]
-ODE_HIDDEN     = [128, 128, 128]  # increased from [128, 128, 128]
-LAMBDA_ODE     = 0.5
-LAMBDA_OXY     = 0.5
-ODE_METHOD = 'rk4'
-## Training ##
-ENCODER_LR     = 1e-3
-ENCODER_EPOCHS = 80               # increased from 40 — oscillation fix + cosine annealing
-ODE_LR         = 5e-4
-ODE_EPOCHS     = 100              # increased from 100 — more room for curriculum phases
-BATCH_SIZE     = 32
-PROBE_LR       = 1e-4
-PROBE_EPOCHS   = 100             # increased from 100 — probe was still converging at 100
+ODE_HIDDEN     = [64, 64]                # much smaller, smoother dynamics
 
-WINDOW_SIZE = 25
+LAMBDA_ODE     = 1.0                     # stronger regularization on dynamics
+LAMBDA_OXY     = 0.5
+
+ODE_METHOD = 'rk4'                       # keep fixed-step, but see note below
+
+## Training ##
+ENCODER_LR     = 5e-4                    # cut in half
+ENCODER_EPOCHS = 100                     # longer, but more stable
+
+ODE_LR         = 1e-4                    # major reduction (key change)
+ODE_EPOCHS     = 150                     # compensate with longer training
+
+BATCH_SIZE     = 64                      # reduce gradient noise
+
+PROBE_LR       = 5e-5                    # more conservative
+PROBE_EPOCHS   = 120
+
+WINDOW_SIZE = 20                         # slightly shorter horizon
 STRIDE      = 2
 
-CURRICULUM_WINDOWS  = [10]
-CURRICULUM_WEIGHTS  = [1.0]  # epoch fractions per phase
-# gives: 30, 40, 50, 80 epochs for windows 5, 10, 20, 25
+CURRICULUM_WINDOWS  = [5, 10, 20]
+CURRICULUM_WEIGHTS  = [0.3, 0.3, 0.4]    # gradual increase in difficulty
