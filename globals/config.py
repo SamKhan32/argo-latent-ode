@@ -56,5 +56,5 @@ PROBE_EPOCHS   = 120
 WINDOW_SIZE = 20                         # slightly shorter horizon
 STRIDE      = 2
 
-CURRICULUM_WINDOWS  = [10]
+CURRICULUM_WINDOWS  = [20]
 CURRICULUM_WEIGHTS  = [1.0]    # gradual increase in difficulty

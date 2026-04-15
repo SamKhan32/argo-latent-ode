@@ -263,5 +263,5 @@ if __name__ == "__main__":
     plot_node_curriculum()
     plot_probe_training()
     plot_extrapolation()
-    plot_finetune_training()
+    #plot_finetune_training()
     print(f"\nDone. All figures saved to: {OUT_DIR}")
