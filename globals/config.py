@@ -37,7 +37,7 @@ DECODER_HIDDEN = [32, 32]
 ODE_HIDDEN     = [128, 128, 128]  # increased from [128, 128, 128]
 LAMBDA_ODE     = 0.5
 LAMBDA_OXY     = 0.5
-
+ODE_METHOD = 'rk4'
 ## Training ##
 ENCODER_LR     = 1e-3
 ENCODER_EPOCHS = 80               # increased from 40 — oscillation fix + cosine annealing

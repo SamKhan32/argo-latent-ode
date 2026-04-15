@@ -32,7 +32,7 @@ from torchdiffeq import odeint
 
 from globals.config import (
     ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM,
-    STRIDE, CURRICULUM_WINDOWS, CURRICULUM_WEIGHTS,
+    STRIDE, CURRICULUM_WINDOWS, CURRICULUM_WEIGHTS, ODE_METHOD
 )
 from data.datasets import ArgoLatentDataset
 from models.architectures.ode import ODEFunc
@@ -160,13 +160,14 @@ def train_ode_curriculum(
                 z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
                 optimizer.zero_grad()  # clear gradients first
 
-                z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
+                z_pred = odeint(ode_func, z0, t_grid, method=ODE_METHOD,
                                 rtol=ODE_RTOL, atol=ODE_ATOL)
 
                 p_pred = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
                 loss   = loss_fn(p_pred, p)
-
+                # train loop - add clipping after loss.backward()
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(ode_func.parameters(), 1.0)
                 optimizer.step()
 
                 train_loss += loss.item()
@@ -186,9 +187,8 @@ def train_ode_curriculum(
                     lon0 = lon[:, 0:1]
                     z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
 
-                    z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
+                    z_pred = odeint(ode_func, z0, t_grid, method=ODE_METHOD,
                                     rtol=ODE_RTOL, atol=ODE_ATOL)
-
                     p_pred    = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
                     val_loss += loss_fn(p_pred, p).item()
 
