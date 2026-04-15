@@ -8,8 +8,8 @@ INTERP_PATH    = "data/processed/PFL1_interp72.csv"  # split.py handles PFL2/3 i
 LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
 
 ## Variables ##
-INPUT_VARS       = ['Temperature', 'Salinity']
-TARGET_VARS      = ['Oxygen']
+INPUT_VARS       = ['Temperature','Oxygen', 'Salinity']
+TARGET_VARS      = ['Chlorophyll']
 ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']
 MIN_TARGET_PROBE = 4
 
