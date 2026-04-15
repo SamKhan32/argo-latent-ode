@@ -1566,3 +1566,12 @@ Epoch  24/120  loss=0.3729  ts_raw=0.0279  ts_evo=0.0541  oxy=0.5817  lr=4.57e-0
 Epoch  25/120  loss=0.3730  ts_raw=0.0281  ts_evo=0.0546  oxy=0.5807  lr=4.53e-05  time=30.3s
 Epoch  26/120  loss=0.3736  ts_raw=0.0280  ts_evo=0.0534  oxy=0.5843  lr=4.49e-05  time=31.0s
 Epoch  27/120  loss=0.3738  ts_raw=0.0280  ts_evo=0.0541  oxy=0.5833  lr=4.45e-05  time=30.8s
+Epoch  28/120  loss=0.3723  ts_raw=0.0280  ts_evo=0.0540  oxy=0.5807  lr=4.41e-05  time=30.5s
+Epoch  29/120  loss=0.3771  ts_raw=0.0280  ts_evo=0.0535  oxy=0.5913  lr=4.37e-05  time=30.6s
+Epoch  30/120  loss=0.3718  ts_raw=0.0281  ts_evo=0.0532  oxy=0.5809  lr=4.33e-05  time=31.1s
+Epoch  31/120  loss=0.3732  ts_raw=0.0281  ts_evo=0.0536  oxy=0.5831  lr=4.28e-05  time=31.0s
+Epoch  32/120  loss=0.3719  ts_raw=0.0280  ts_evo=0.0534  oxy=0.5809  lr=4.24e-05  time=30.9s
+Epoch  33/120  loss=0.3720  ts_raw=0.0280  ts_evo=0.0528  oxy=0.5825  lr=4.19e-05  time=30.6s
+Epoch  34/120  loss=0.3715  ts_raw=0.0281  ts_evo=0.0529  oxy=0.5811  lr=4.14e-05  time=30.1s
+Epoch  35/120  loss=0.3710  ts_raw=0.0280  ts_evo=0.0526  oxy=0.5807  lr=4.09e-05  time=30.4s
+Epoch  36/120  loss=0.3727  ts_raw=0.0281  ts_evo=0.0538  oxy=0.5815  lr=4.04e-05  time=30.9s
