@@ -1,0 +1,1215 @@
+======================================================
+Start Time  : Thu Apr 16 02:04:24 AM EDT 2026
+Submit Dir  : /users/sphill86/ocean_dynamics_2
+Job ID/Name : 14143408 / ocean_latent_ode
+Partition   : GPU
+======================================================
+=== Stage: split ===
+Low drift floats:    140
+Depth observations:  1,121,134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  96 floats  (21 with O2)
+  test  :  25 floats  (7 with O2)
+  probe :  19 floats  (6 with O2)
+
+Row counts by split:
+split
+train    733358
+test     224767
+probe    163009
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                 9    17     60
+Split complete.
+=== Stage: encoder ===
+Using device: cuda
+Low drift floats:    140
+Depth observations:  1,121,134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  96 floats  (21 with O2)
+  test  :  25 floats  (7 with O2)
+  probe :  19 floats  (6 with O2)
+
+Row counts by split:
+split
+train    733358
+test     224767
+probe    163009
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                 9    17     60
+Epoch   1/80  train=4.4066  val=0.0715  time=6.3s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0715)
+Epoch   2/80  train=0.0754  val=0.0593  time=6.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0593)
+Epoch   3/80  train=0.0617  val=0.0515  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0515)
+Epoch   4/80  train=0.0564  val=0.0503  time=6.2s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0503)
+Epoch   5/80  train=0.0522  val=0.0462  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0462)
+Epoch   6/80  train=0.0481  val=0.0416  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0416)
+Epoch   7/80  train=0.0477  val=0.0462  time=6.0s
+Epoch   8/80  train=0.0430  val=0.0434  time=6.2s
+Epoch   9/80  train=0.0410  val=0.0392  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0392)
+Epoch  10/80  train=0.0394  val=0.0366  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0366)
+Epoch  11/80  train=0.0400  val=0.0398  time=6.0s
+Epoch  12/80  train=0.0437  val=0.0963  time=6.1s
+Epoch  13/80  train=0.0398  val=0.0334  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0334)
+Epoch  14/80  train=0.0334  val=0.0332  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0332)
+Epoch  15/80  train=0.0366  val=0.0301  time=6.0s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0301)
+Epoch  16/80  train=0.0333  val=0.0418  time=6.2s
+Epoch  17/80  train=0.0356  val=0.0381  time=6.0s
+Epoch  18/80  train=0.0350  val=0.0443  time=6.0s
+Epoch  19/80  train=0.0310  val=0.0317  time=6.0s
+Epoch  20/80  train=0.0319  val=0.0262  time=6.1s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0262)
+Epoch  21/80  train=0.0337  val=0.0268  time=5.9s
+Epoch  22/80  train=0.0314  val=0.0322  time=5.9s
+Epoch  23/80  train=0.0273  val=0.0219  time=5.9s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0219)
+Epoch  24/80  train=0.0289  val=0.0281  time=6.1s
+Epoch  25/80  train=0.0261  val=0.0307  time=6.0s
+Epoch  26/80  train=0.0285  val=0.0275  time=5.9s
+Epoch  27/80  train=0.0248  val=0.0259  time=5.9s
+Epoch  28/80  train=0.0257  val=0.0295  time=6.1s
+Epoch  29/80  train=0.0260  val=0.0322  time=5.9s
+Epoch  30/80  train=0.0266  val=0.0281  time=6.0s
+Epoch  31/80  train=0.0234  val=0.0253  time=5.9s
+Epoch  32/80  train=0.0237  val=0.0291  time=6.0s
+Epoch  33/80  train=0.0236  val=0.0330  time=5.9s
+Epoch  34/80  train=0.0237  val=0.0292  time=5.9s
+Epoch  35/80  train=0.0235  val=0.0390  time=5.9s
+Epoch  36/80  train=0.0228  val=0.0272  time=6.1s
+Epoch  37/80  train=0.0222  val=0.0305  time=5.9s
+Epoch  38/80  train=0.0212  val=0.0332  time=5.9s
+Epoch  39/80  train=0.0232  val=0.0369  time=5.8s
+Epoch  40/80  train=0.0200  val=0.0308  time=6.0s
+Epoch  41/80  train=0.0212  val=0.0314  time=5.8s
+Epoch  42/80  train=0.0202  val=0.0305  time=5.8s
+Epoch  43/80  train=0.0214  val=0.0441  time=5.8s
+Epoch  44/80  train=0.0199  val=0.0302  time=6.0s
+Epoch  45/80  train=0.0224  val=0.0377  time=5.9s
+Epoch  46/80  train=0.0187  val=0.0291  time=5.9s
+Epoch  47/80  train=0.0188  val=0.0296  time=5.9s
+Epoch  48/80  train=0.0192  val=0.0281  time=6.0s
+Epoch  49/80  train=0.0187  val=0.0270  time=5.9s
+Epoch  50/80  train=0.0177  val=0.0286  time=5.9s
+Epoch  51/80  train=0.0189  val=0.0266  time=5.9s
+Epoch  52/80  train=0.0186  val=0.0386  time=6.0s
+Epoch  53/80  train=0.0203  val=0.0312  time=5.9s
+Epoch  54/80  train=0.0170  val=0.0256  time=5.9s
+Epoch  55/80  train=0.0186  val=0.0242  time=5.9s
+Epoch  56/80  train=0.0165  val=0.0293  time=6.0s
+Epoch  57/80  train=0.0180  val=0.0252  time=5.9s
+Epoch  58/80  train=0.0160  val=0.0244  time=5.9s
+Epoch  59/80  train=0.0173  val=0.0253  time=5.9s
+Epoch  60/80  train=0.0167  val=0.0246  time=5.9s
+Epoch  61/80  train=0.0189  val=0.0231  time=6.0s
+Epoch  62/80  train=0.0169  val=0.0225  time=5.9s
+Epoch  63/80  train=0.0158  val=0.0212  time=5.9s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0212)
+Epoch  64/80  train=0.0161  val=0.0235  time=5.9s
+Epoch  65/80  train=0.0154  val=0.0244  time=6.0s
+Epoch  66/80  train=0.0157  val=0.0194  time=5.8s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0194)
+Epoch  67/80  train=0.0153  val=0.0199  time=5.8s
+Epoch  68/80  train=0.0151  val=0.0209  time=5.8s
+Epoch  69/80  train=0.0150  val=0.0281  time=5.9s
+Epoch  70/80  train=0.0148  val=0.0195  time=5.8s
+Epoch  71/80  train=0.0152  val=0.0193  time=5.8s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0193)
+Epoch  72/80  train=0.0150  val=0.0218  time=5.8s
+Epoch  73/80  train=0.0146  val=0.0188  time=5.9s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0188)
+Epoch  74/80  train=0.0137  val=0.0202  time=5.8s
+Epoch  75/80  train=0.0154  val=0.0184  time=5.8s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0184)
+Epoch  76/80  train=0.0138  val=0.0170  time=5.8s
+Saved autoencoder to checkpoints/autoencoder_best.pt
+  -> saved checkpoint (val=0.0170)
+Epoch  77/80  train=0.0147  val=0.0192  time=5.9s
+Epoch  78/80  train=0.0140  val=0.0187  time=5.8s
+Epoch  79/80  train=0.0133  val=0.0176  time=5.8s
+Epoch  80/80  train=0.0136  val=0.0184  time=5.8s
+
+Encoder training complete. Best val loss: 0.0170
+Losses saved to: results/encoder_losses.csv
+=== Stage: encode ===
+Low drift floats:    140
+Depth observations:  1,121,134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  96 floats  (21 with O2)
+  test  :  25 floats  (7 with O2)
+  probe :  19 floats  (6 with O2)
+
+Row counts by split:
+split
+train    733358
+test     224767
+probe    163009
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                 9    17     60
+Latent train: 10046 casts
+Latent val:   3079 casts
+Latent probe: 2233 casts
+Saved latent cycles to checkpoints/latent_cycles.pt
+=== Stage: ode_curriculum ===
+Using device: cuda
+Loading latent cycles from checkpoints/latent_cycles.pt
+
+Curriculum schedule:
+  Phase 1: window=10 (100 days)  epochs=80
+  Total epochs: 80
+
+============================================================
+Phase 1/1 — window=10 (100 days)  epochs=80
+============================================================
+Building train windows...
+Train windows: 4614
+Building val windows...
+Val windows: 1434
+  [1/1] Epoch   1/80  (global 1)  train=5.1987  val=0.3794  lr=1.00e-04  time=4.4s
+  -> saved checkpoint (val=0.3794)
+  [1/1] Epoch   2/80  (global 2)  train=0.2767  val=0.2255  lr=1.00e-04  time=4.3s
+  -> saved checkpoint (val=0.2255)
+  [1/1] Epoch   3/80  (global 3)  train=0.1911  val=0.1865  lr=9.98e-05  time=4.3s
+  -> saved checkpoint (val=0.1865)
+  [1/1] Epoch   4/80  (global 4)  train=0.1620  val=0.1417  lr=9.97e-05  time=4.3s
+  -> saved checkpoint (val=0.1417)
+  [1/1] Epoch   5/80  (global 5)  train=0.1449  val=0.1294  lr=9.94e-05  time=4.4s
+  -> saved checkpoint (val=0.1294)
+  [1/1] Epoch   6/80  (global 6)  train=0.1364  val=0.1206  lr=9.90e-05  time=4.4s
+  -> saved checkpoint (val=0.1206)
+  [1/1] Epoch   7/80  (global 7)  train=0.1310  val=0.1143  lr=9.86e-05  time=4.3s
+  -> saved checkpoint (val=0.1143)
+  [1/1] Epoch   8/80  (global 8)  train=0.1259  val=0.1031  lr=9.81e-05  time=4.3s
+  -> saved checkpoint (val=0.1031)
+  [1/1] Epoch   9/80  (global 9)  train=0.1222  val=0.1031  lr=9.76e-05  time=4.3s
+  -> saved checkpoint (val=0.1031)
+  [1/1] Epoch  10/80  (global 10)  train=0.1203  val=0.0916  lr=9.69e-05  time=4.4s
+  -> saved checkpoint (val=0.0916)
+  [1/1] Epoch  11/80  (global 11)  train=0.1161  val=0.0972  lr=9.62e-05  time=4.3s
+  [1/1] Epoch  12/80  (global 12)  train=0.1148  val=0.0915  lr=9.55e-05  time=4.3s
+  -> saved checkpoint (val=0.0915)
+  [1/1] Epoch  13/80  (global 13)  train=0.1134  val=0.0829  lr=9.46e-05  time=4.3s
+  -> saved checkpoint (val=0.0829)
+  [1/1] Epoch  14/80  (global 14)  train=0.1116  val=0.0870  lr=9.37e-05  time=4.3s
+  [1/1] Epoch  15/80  (global 15)  train=0.1114  val=0.0874  lr=9.27e-05  time=4.3s
+  [1/1] Epoch  16/80  (global 16)  train=0.1107  val=0.0885  lr=9.17e-05  time=4.3s
+  [1/1] Epoch  17/80  (global 17)  train=0.1087  val=0.0841  lr=9.05e-05  time=4.3s
+  [1/1] Epoch  18/80  (global 18)  train=0.1080  val=0.0800  lr=8.94e-05  time=4.3s
+  -> saved checkpoint (val=0.0800)
+  [1/1] Epoch  19/80  (global 19)  train=0.1072  val=0.0799  lr=8.81e-05  time=4.3s
+  -> saved checkpoint (val=0.0799)
+  [1/1] Epoch  20/80  (global 20)  train=0.1069  val=0.0871  lr=8.68e-05  time=4.3s
+  [1/1] Epoch  21/80  (global 21)  train=0.1053  val=0.0830  lr=8.55e-05  time=4.3s
+  [1/1] Epoch  22/80  (global 22)  train=0.1051  val=0.0841  lr=8.41e-05  time=4.3s
+  [1/1] Epoch  23/80  (global 23)  train=0.1045  val=0.0774  lr=8.26e-05  time=4.3s
+  -> saved checkpoint (val=0.0774)
+  [1/1] Epoch  24/80  (global 24)  train=0.1041  val=0.0814  lr=8.11e-05  time=4.3s
+  [1/1] Epoch  25/80  (global 25)  train=0.1036  val=0.0789  lr=7.96e-05  time=4.3s
+  [1/1] Epoch  26/80  (global 26)  train=0.1024  val=0.0804  lr=7.80e-05  time=4.3s
+  [1/1] Epoch  27/80  (global 27)  train=0.1026  val=0.0818  lr=7.64e-05  time=4.3s
+  [1/1] Epoch  28/80  (global 28)  train=0.1018  val=0.0802  lr=7.47e-05  time=4.3s
+  [1/1] Epoch  29/80  (global 29)  train=0.1013  val=0.0807  lr=7.30e-05  time=4.3s
+  [1/1] Epoch  30/80  (global 30)  train=0.1015  val=0.0820  lr=7.12e-05  time=4.3s
+  [1/1] Epoch  31/80  (global 31)  train=0.1010  val=0.0794  lr=6.94e-05  time=4.3s
+  [1/1] Epoch  32/80  (global 32)  train=0.1001  val=0.0847  lr=6.76e-05  time=4.3s
+  [1/1] Epoch  33/80  (global 33)  train=0.0996  val=0.0779  lr=6.58e-05  time=4.3s
+  [1/1] Epoch  34/80  (global 34)  train=0.0991  val=0.0798  lr=6.39e-05  time=4.3s
+  [1/1] Epoch  35/80  (global 35)  train=0.0986  val=0.0786  lr=6.21e-05  time=4.3s
+  [1/1] Epoch  36/80  (global 36)  train=0.0991  val=0.0854  lr=6.02e-05  time=4.3s
+  [1/1] Epoch  37/80  (global 37)  train=0.0981  val=0.0835  lr=5.82e-05  time=4.3s
+  [1/1] Epoch  38/80  (global 38)  train=0.0979  val=0.0779  lr=5.63e-05  time=4.3s
+  [1/1] Epoch  39/80  (global 39)  train=0.0973  val=0.0831  lr=5.44e-05  time=4.3s
+  [1/1] Epoch  40/80  (global 40)  train=0.0968  val=0.0815  lr=5.24e-05  time=4.3s
+  [1/1] Epoch  41/80  (global 41)  train=0.0967  val=0.0826  lr=5.05e-05  time=4.3s
+  [1/1] Epoch  42/80  (global 42)  train=0.0967  val=0.0813  lr=4.86e-05  time=4.3s
+  [1/1] Epoch  43/80  (global 43)  train=0.0963  val=0.0801  lr=4.66e-05  time=4.3s
+  [1/1] Epoch  44/80  (global 44)  train=0.0960  val=0.0817  lr=4.47e-05  time=4.3s
+  [1/1] Epoch  45/80  (global 45)  train=0.0967  val=0.0849  lr=4.28e-05  time=4.3s
+  [1/1] Epoch  46/80  (global 46)  train=0.0956  val=0.0868  lr=4.08e-05  time=4.3s
+  [1/1] Epoch  47/80  (global 47)  train=0.0960  val=0.0839  lr=3.89e-05  time=4.3s
+  [1/1] Epoch  48/80  (global 48)  train=0.0951  val=0.0833  lr=3.71e-05  time=4.3s
+  [1/1] Epoch  49/80  (global 49)  train=0.0949  val=0.0816  lr=3.52e-05  time=4.3s
+  [1/1] Epoch  50/80  (global 50)  train=0.0948  val=0.0840  lr=3.34e-05  time=4.3s
+  [1/1] Epoch  51/80  (global 51)  train=0.0948  val=0.0792  lr=3.16e-05  time=4.3s
+  [1/1] Epoch  52/80  (global 52)  train=0.0939  val=0.0842  lr=2.98e-05  time=4.3s
+  [1/1] Epoch  53/80  (global 53)  train=0.0940  val=0.0846  lr=2.80e-05  time=4.3s
+  [1/1] Epoch  54/80  (global 54)  train=0.0936  val=0.0840  lr=2.63e-05  time=4.3s
+  [1/1] Epoch  55/80  (global 55)  train=0.0933  val=0.0894  lr=2.46e-05  time=4.3s
+  [1/1] Epoch  56/80  (global 56)  train=0.0934  val=0.0808  lr=2.30e-05  time=4.3s
+  [1/1] Epoch  57/80  (global 57)  train=0.0931  val=0.0857  lr=2.14e-05  time=4.3s
+  [1/1] Epoch  58/80  (global 58)  train=0.0929  val=0.0864  lr=1.99e-05  time=4.3s
+  [1/1] Epoch  59/80  (global 59)  train=0.0927  val=0.0837  lr=1.84e-05  time=4.3s
+  [1/1] Epoch  60/80  (global 60)  train=0.0925  val=0.0826  lr=1.69e-05  time=4.3s
+  [1/1] Epoch  61/80  (global 61)  train=0.0924  val=0.0852  lr=1.55e-05  time=4.3s
+  [1/1] Epoch  62/80  (global 62)  train=0.0922  val=0.0845  lr=1.42e-05  time=4.3s
+  [1/1] Epoch  63/80  (global 63)  train=0.0921  val=0.0837  lr=1.29e-05  time=4.3s
+  [1/1] Epoch  64/80  (global 64)  train=0.0922  val=0.0854  lr=1.16e-05  time=4.3s
+  [1/1] Epoch  65/80  (global 65)  train=0.0919  val=0.0838  lr=1.05e-05  time=4.3s
+  [1/1] Epoch  66/80  (global 66)  train=0.0919  val=0.0827  lr=9.34e-06  time=4.3s
+  [1/1] Epoch  67/80  (global 67)  train=0.0921  val=0.0820  lr=8.29e-06  time=4.3s
+  [1/1] Epoch  68/80  (global 68)  train=0.0921  val=0.0834  lr=7.31e-06  time=4.3s
+  [1/1] Epoch  69/80  (global 69)  train=0.0915  val=0.0823  lr=6.40e-06  time=4.3s
+  [1/1] Epoch  70/80  (global 70)  train=0.0913  val=0.0820  lr=5.55e-06  time=4.3s
+  [1/1] Epoch  71/80  (global 71)  train=0.0912  val=0.0806  lr=4.77e-06  time=4.3s
+  [1/1] Epoch  72/80  (global 72)  train=0.0911  val=0.0829  lr=4.06e-06  time=4.3s
+  [1/1] Epoch  73/80  (global 73)  train=0.0911  val=0.0843  lr=3.42e-06  time=4.3s
+  [1/1] Epoch  74/80  (global 74)  train=0.0910  val=0.0819  lr=2.86e-06  time=4.3s
+  [1/1] Epoch  75/80  (global 75)  train=0.0909  val=0.0826  lr=2.37e-06  time=4.3s
+  [1/1] Epoch  76/80  (global 76)  train=0.0909  val=0.0815  lr=1.95e-06  time=4.3s
+  [1/1] Epoch  77/80  (global 77)  train=0.0908  val=0.0826  lr=1.61e-06  time=4.3s
+  [1/1] Epoch  78/80  (global 78)  train=0.0909  val=0.0822  lr=1.34e-06  time=4.3s
+  [1/1] Epoch  79/80  (global 79)  train=0.0909  val=0.0812  lr=1.15e-06  time=4.4s
+  [1/1] Epoch  80/80  (global 80)  train=0.0910  val=0.0819  lr=1.04e-06  time=4.4s
+
+Curriculum ODE training complete. Best val loss: 0.0774
+Losses saved to: results/node_curriculum_losses.csv
+=== Stage: gru ===
+Using device: cuda
+Loading latent cycles from checkpoints/latent_cycles.pt
+Building train windows...
+Train windows: 3993
+Building val windows...
+Val windows: 1252
+Epoch   1/80  train=0.6073  val=0.3148  time=1.9s
+  -> saved checkpoint (val=0.3148)
+Epoch   2/80  train=0.3576  val=0.2200  time=1.9s
+  -> saved checkpoint (val=0.2200)
+Epoch   3/80  train=0.2874  val=0.1795  time=1.9s
+  -> saved checkpoint (val=0.1795)
+Epoch   4/80  train=0.2457  val=0.1597  time=1.9s
+  -> saved checkpoint (val=0.1597)
+Epoch   5/80  train=0.2158  val=0.1453  time=1.9s
+  -> saved checkpoint (val=0.1453)
+Epoch   6/80  train=0.1946  val=0.1381  time=1.9s
+  -> saved checkpoint (val=0.1381)
+Epoch   7/80  train=0.1810  val=0.1287  time=1.9s
+  -> saved checkpoint (val=0.1287)
+Epoch   8/80  train=0.1713  val=0.1237  time=1.9s
+  -> saved checkpoint (val=0.1237)
+Epoch   9/80  train=0.1634  val=0.1231  time=1.9s
+  -> saved checkpoint (val=0.1231)
+Epoch  10/80  train=0.1559  val=0.1208  time=1.9s
+  -> saved checkpoint (val=0.1208)
+Epoch  11/80  train=0.1494  val=0.1209  time=1.9s
+Epoch  12/80  train=0.1453  val=0.1213  time=1.9s
+Epoch  13/80  train=0.1398  val=0.1193  time=1.9s
+  -> saved checkpoint (val=0.1193)
+Epoch  14/80  train=0.1357  val=0.1174  time=1.9s
+  -> saved checkpoint (val=0.1174)
+Epoch  15/80  train=0.1322  val=0.1196  time=1.9s
+Epoch  16/80  train=0.1297  val=0.1158  time=1.9s
+  -> saved checkpoint (val=0.1158)
+Epoch  17/80  train=0.1273  val=0.1175  time=1.9s
+Epoch  18/80  train=0.1257  val=0.1163  time=1.9s
+Epoch  19/80  train=0.1233  val=0.1163  time=1.9s
+Epoch  20/80  train=0.1221  val=0.1139  time=1.9s
+  -> saved checkpoint (val=0.1139)
+Epoch  21/80  train=0.1202  val=0.1140  time=1.9s
+Epoch  22/80  train=0.1187  val=0.1153  time=1.9s
+Epoch  23/80  train=0.1179  val=0.1125  time=1.9s
+  -> saved checkpoint (val=0.1125)
+Epoch  24/80  train=0.1161  val=0.1123  time=1.9s
+  -> saved checkpoint (val=0.1123)
+Epoch  25/80  train=0.1151  val=0.1135  time=1.9s
+Epoch  26/80  train=0.1152  val=0.1120  time=1.9s
+  -> saved checkpoint (val=0.1120)
+Epoch  27/80  train=0.1139  val=0.1112  time=1.9s
+  -> saved checkpoint (val=0.1112)
+Epoch  28/80  train=0.1129  val=0.1132  time=1.9s
+Epoch  29/80  train=0.1123  val=0.1113  time=1.9s
+Epoch  30/80  train=0.1122  val=0.1091  time=1.9s
+  -> saved checkpoint (val=0.1091)
+Epoch  31/80  train=0.1108  val=0.1136  time=1.9s
+Epoch  32/80  train=0.1103  val=0.1093  time=1.9s
+Epoch  33/80  train=0.1090  val=0.1067  time=1.9s
+  -> saved checkpoint (val=0.1067)
+Epoch  34/80  train=0.1081  val=0.1087  time=1.9s
+Epoch  35/80  train=0.1082  val=0.1071  time=1.9s
+Epoch  36/80  train=0.1082  val=0.1074  time=1.9s
+Epoch  37/80  train=0.1081  val=0.1050  time=1.9s
+  -> saved checkpoint (val=0.1050)
+Epoch  38/80  train=0.1048  val=0.1053  time=1.9s
+Epoch  39/80  train=0.1065  val=0.1051  time=1.9s
+Epoch  40/80  train=0.1043  val=0.1049  time=1.9s
+  -> saved checkpoint (val=0.1049)
+Epoch  41/80  train=0.1038  val=0.1040  time=1.9s
+  -> saved checkpoint (val=0.1040)
+Epoch  42/80  train=0.1027  val=0.1078  time=1.9s
+Epoch  43/80  train=0.1042  val=0.1046  time=1.9s
+Epoch  44/80  train=0.1010  val=0.1048  time=1.9s
+Epoch  45/80  train=0.1031  val=0.1038  time=1.9s
+  -> saved checkpoint (val=0.1038)
+Epoch  46/80  train=0.1010  val=0.1032  time=1.9s
+  -> saved checkpoint (val=0.1032)
+Epoch  47/80  train=0.1010  val=0.1032  time=1.9s
+Epoch  48/80  train=0.1004  val=0.1030  time=1.9s
+  -> saved checkpoint (val=0.1030)
+Epoch  49/80  train=0.1038  val=0.1030  time=1.9s
+Epoch  50/80  train=0.1010  val=0.1023  time=1.9s
+  -> saved checkpoint (val=0.1023)
+Epoch  51/80  train=0.1056  val=0.1013  time=1.9s
+  -> saved checkpoint (val=0.1013)
+Epoch  52/80  train=0.0993  val=0.1022  time=1.9s
+Epoch  53/80  train=0.0993  val=0.1020  time=1.9s
+Epoch  54/80  train=0.1008  val=0.1013  time=1.9s
+Epoch  55/80  train=0.0985  val=0.1045  time=1.9s
+Epoch  56/80  train=0.1002  val=0.1020  time=1.9s
+Epoch  57/80  train=0.1010  val=0.1003  time=1.9s
+  -> saved checkpoint (val=0.1003)
+Epoch  58/80  train=0.0993  val=0.1011  time=1.9s
+Epoch  59/80  train=0.0995  val=0.1014  time=1.9s
+Epoch  60/80  train=0.0978  val=0.1014  time=1.9s
+Epoch  61/80  train=0.0965  val=0.1012  time=1.9s
+Epoch  62/80  train=0.0976  val=0.1014  time=1.9s
+Epoch  63/80  train=0.0965  val=0.1002  time=1.9s
+  -> saved checkpoint (val=0.1002)
+Epoch  64/80  train=0.0958  val=0.1001  time=1.9s
+  -> saved checkpoint (val=0.1001)
+Epoch  65/80  train=0.0996  val=0.1006  time=1.9s
+Epoch  66/80  train=0.1020  val=0.1002  time=1.9s
+Epoch  67/80  train=0.0956  val=0.0994  time=1.9s
+  -> saved checkpoint (val=0.0994)
+Epoch  68/80  train=0.0985  val=0.0990  time=1.9s
+  -> saved checkpoint (val=0.0990)
+Epoch  69/80  train=0.0958  val=0.0987  time=1.9s
+  -> saved checkpoint (val=0.0987)
+Epoch  70/80  train=0.0948  val=0.0991  time=1.9s
+Epoch  71/80  train=0.0969  val=0.1004  time=1.9s
+Epoch  72/80  train=0.0986  val=0.0992  time=1.9s
+Epoch  73/80  train=0.0983  val=0.0985  time=1.9s
+  -> saved checkpoint (val=0.0985)
+Epoch  74/80  train=0.0966  val=0.0994  time=1.9s
+Epoch  75/80  train=0.0951  val=0.0987  time=1.9s
+Epoch  76/80  train=0.0940  val=0.0981  time=1.9s
+  -> saved checkpoint (val=0.0981)
+Epoch  77/80  train=0.0951  val=0.0982  time=1.9s
+Epoch  78/80  train=0.0944  val=0.0976  time=1.9s
+  -> saved checkpoint (val=0.0976)
+Epoch  79/80  train=0.0951  val=0.0981  time=1.9s
+Epoch  80/80  train=0.0993  val=0.0993  time=1.9s
+
+GRU training complete. Best val loss: 0.0976
+Losses saved to: results/gru_losses.csv
+=== Stage: probe ===
+Low drift floats:    140
+Depth observations:  1,121,134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  96 floats  (21 with O2)
+  test  :  25 floats  (7 with O2)
+  probe :  19 floats  (6 with O2)
+
+Row counts by split:
+split
+train    733358
+test     224767
+probe    163009
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                 9    17     60
+Probe casts: 2233
+Using device: cuda
+Computing oxygen normalization stats...
+Oxygen stats — mean: 0.10, std: 0.20
+Building probe windows...
+Probe windows: 1082
+Epoch   1/200  train=0.9889  val=1.1976  lr=5.00e-04  time=4.1s
+  -> saved checkpoint (val=1.1976)
+Epoch   2/200  train=0.7454  val=1.0703  lr=5.00e-04  time=3.7s
+  -> saved checkpoint (val=1.0703)
+Epoch   3/200  train=0.6883  val=0.9655  lr=5.00e-04  time=3.8s
+  -> saved checkpoint (val=0.9655)
+Epoch   4/200  train=0.6204  val=0.8777  lr=5.00e-04  time=3.7s
+  -> saved checkpoint (val=0.8777)
+Epoch   5/200  train=0.5871  val=0.8204  lr=5.00e-04  time=3.7s
+  -> saved checkpoint (val=0.8204)
+Epoch   6/200  train=0.5505  val=0.7898  lr=4.99e-04  time=3.7s
+  -> saved checkpoint (val=0.7898)
+Epoch   7/200  train=0.5083  val=0.7386  lr=4.99e-04  time=3.7s
+  -> saved checkpoint (val=0.7386)
+Epoch   8/200  train=0.5301  val=0.7194  lr=4.98e-04  time=3.7s
+  -> saved checkpoint (val=0.7194)
+Epoch   9/200  train=0.5011  val=0.7054  lr=4.98e-04  time=3.8s
+  -> saved checkpoint (val=0.7054)
+Epoch  10/200  train=0.5009  val=0.6888  lr=4.98e-04  time=3.7s
+  -> saved checkpoint (val=0.6888)
+Epoch  11/200  train=0.4856  val=0.6777  lr=4.97e-04  time=3.7s
+  -> saved checkpoint (val=0.6777)
+Epoch  12/200  train=0.4542  val=0.6612  lr=4.96e-04  time=3.7s
+  -> saved checkpoint (val=0.6612)
+Epoch  13/200  train=0.4787  val=0.6639  lr=4.96e-04  time=3.7s
+Epoch  14/200  train=0.4609  val=0.6478  lr=4.95e-04  time=3.7s
+  -> saved checkpoint (val=0.6478)
+Epoch  15/200  train=0.4620  val=0.6466  lr=4.94e-04  time=3.7s
+  -> saved checkpoint (val=0.6466)
+Epoch  16/200  train=0.4634  val=0.6376  lr=4.93e-04  time=3.8s
+  -> saved checkpoint (val=0.6376)
+Epoch  17/200  train=0.4352  val=0.6537  lr=4.92e-04  time=3.7s
+Epoch  18/200  train=0.4666  val=0.6281  lr=4.91e-04  time=3.7s
+  -> saved checkpoint (val=0.6281)
+Epoch  19/200  train=0.4494  val=0.6295  lr=4.90e-04  time=3.7s
+Epoch  20/200  train=0.4368  val=0.6263  lr=4.89e-04  time=3.7s
+  -> saved checkpoint (val=0.6263)
+Epoch  21/200  train=0.4268  val=0.6221  lr=4.88e-04  time=3.7s
+  -> saved checkpoint (val=0.6221)
+Epoch  22/200  train=0.4496  val=0.6318  lr=4.87e-04  time=3.8s
+Epoch  23/200  train=0.4402  val=0.6176  lr=4.85e-04  time=3.7s
+  -> saved checkpoint (val=0.6176)
+Epoch  24/200  train=0.4334  val=0.6205  lr=4.84e-04  time=3.7s
+Epoch  25/200  train=0.4565  val=0.6155  lr=4.82e-04  time=3.7s
+  -> saved checkpoint (val=0.6155)
+Epoch  26/200  train=0.4582  val=0.6265  lr=4.81e-04  time=3.7s
+Epoch  27/200  train=0.4307  val=0.6133  lr=4.79e-04  time=3.7s
+  -> saved checkpoint (val=0.6133)
+Epoch  28/200  train=0.4528  val=0.6395  lr=4.78e-04  time=3.8s
+Epoch  29/200  train=0.4546  val=0.6043  lr=4.76e-04  time=3.7s
+  -> saved checkpoint (val=0.6043)
+Epoch  30/200  train=0.4351  val=0.6466  lr=4.75e-04  time=3.7s
+Epoch  31/200  train=0.4467  val=0.5988  lr=4.73e-04  time=3.7s
+  -> saved checkpoint (val=0.5988)
+Epoch  32/200  train=0.4546  val=0.5988  lr=4.71e-04  time=3.7s
+  -> saved checkpoint (val=0.5988)
+Epoch  33/200  train=0.4379  val=0.5930  lr=4.69e-04  time=3.7s
+  -> saved checkpoint (val=0.5930)
+Epoch  34/200  train=0.4243  val=0.6012  lr=4.67e-04  time=3.7s
+Epoch  35/200  train=0.4335  val=0.5911  lr=4.65e-04  time=3.8s
+  -> saved checkpoint (val=0.5911)
+Epoch  36/200  train=0.4351  val=0.5922  lr=4.63e-04  time=3.7s
+Epoch  37/200  train=0.4088  val=0.5954  lr=4.61e-04  time=3.7s
+Epoch  38/200  train=0.4165  val=0.5870  lr=4.59e-04  time=3.7s
+  -> saved checkpoint (val=0.5870)
+Epoch  39/200  train=0.4225  val=0.5846  lr=4.57e-04  time=3.7s
+  -> saved checkpoint (val=0.5846)
+Epoch  40/200  train=0.4149  val=0.5841  lr=4.55e-04  time=3.7s
+  -> saved checkpoint (val=0.5841)
+Epoch  41/200  train=0.4247  val=0.6538  lr=4.52e-04  time=3.8s
+Epoch  42/200  train=0.4020  val=0.5852  lr=4.50e-04  time=3.7s
+Epoch  43/200  train=0.4068  val=0.5887  lr=4.48e-04  time=3.7s
+Epoch  44/200  train=0.4569  val=0.5780  lr=4.45e-04  time=3.7s
+  -> saved checkpoint (val=0.5780)
+Epoch  45/200  train=0.4160  val=0.5896  lr=4.43e-04  time=3.7s
+Epoch  46/200  train=0.4209  val=0.5844  lr=4.40e-04  time=3.7s
+Epoch  47/200  train=0.3967  val=0.5855  lr=4.38e-04  time=3.8s
+Epoch  48/200  train=0.4033  val=0.6321  lr=4.35e-04  time=3.7s
+Epoch  49/200  train=0.4073  val=0.5792  lr=4.32e-04  time=3.7s
+Epoch  50/200  train=0.4071  val=0.5693  lr=4.30e-04  time=3.7s
+  -> saved checkpoint (val=0.5693)
+Epoch  51/200  train=0.4376  val=0.5717  lr=4.27e-04  time=3.7s
+Epoch  52/200  train=0.4061  val=0.5901  lr=4.24e-04  time=3.7s
+Epoch  53/200  train=0.3963  val=0.5899  lr=4.21e-04  time=3.7s
+Epoch  54/200  train=0.3963  val=0.5663  lr=4.18e-04  time=3.8s
+  -> saved checkpoint (val=0.5663)
+Epoch  55/200  train=0.3943  val=0.5731  lr=4.15e-04  time=3.7s
+Epoch  56/200  train=0.3916  val=0.5649  lr=4.13e-04  time=3.7s
+  -> saved checkpoint (val=0.5649)
+Epoch  57/200  train=0.3981  val=0.5660  lr=4.10e-04  time=3.7s
+Epoch  58/200  train=0.3793  val=0.5669  lr=4.06e-04  time=3.7s
+Epoch  59/200  train=0.4036  val=0.5829  lr=4.03e-04  time=3.7s
+Epoch  60/200  train=0.4146  val=0.5849  lr=4.00e-04  time=3.7s
+Epoch  61/200  train=0.4049  val=0.5952  lr=3.97e-04  time=3.8s
+Epoch  62/200  train=0.3942  val=0.5650  lr=3.94e-04  time=3.7s
+Epoch  63/200  train=0.4060  val=0.5571  lr=3.91e-04  time=3.7s
+  -> saved checkpoint (val=0.5571)
+Epoch  64/200  train=0.4135  val=0.5567  lr=3.87e-04  time=3.7s
+  -> saved checkpoint (val=0.5567)
+Epoch  65/200  train=0.4537  val=0.5674  lr=3.84e-04  time=3.7s
+Epoch  66/200  train=0.4041  val=0.5596  lr=3.81e-04  time=3.7s
+Epoch  67/200  train=0.4057  val=0.5530  lr=3.78e-04  time=3.8s
+  -> saved checkpoint (val=0.5530)
+Epoch  68/200  train=0.3854  val=0.5652  lr=3.74e-04  time=3.7s
+Epoch  69/200  train=0.3944  val=0.5595  lr=3.71e-04  time=3.7s
+Epoch  70/200  train=0.3821  val=0.5553  lr=3.67e-04  time=3.7s
+Epoch  71/200  train=0.3819  val=0.5496  lr=3.64e-04  time=3.7s
+  -> saved checkpoint (val=0.5496)
+Epoch  72/200  train=0.3776  val=0.5554  lr=3.60e-04  time=3.7s
+Epoch  73/200  train=0.4053  val=0.5541  lr=3.57e-04  time=3.7s
+Epoch  74/200  train=0.3633  val=0.5634  lr=3.53e-04  time=3.8s
+Epoch  75/200  train=0.3701  val=0.5585  lr=3.50e-04  time=3.7s
+Epoch  76/200  train=0.3763  val=0.5552  lr=3.46e-04  time=3.7s
+Epoch  77/200  train=0.3678  val=0.5495  lr=3.42e-04  time=3.7s
+  -> saved checkpoint (val=0.5495)
+Epoch  78/200  train=0.3959  val=0.5540  lr=3.39e-04  time=3.7s
+Epoch  79/200  train=0.3834  val=0.5816  lr=3.35e-04  time=3.7s
+Epoch  80/200  train=0.4282  val=0.5485  lr=3.31e-04  time=3.8s
+  -> saved checkpoint (val=0.5485)
+Epoch  81/200  train=0.3856  val=0.5568  lr=3.28e-04  time=3.7s
+Epoch  82/200  train=0.3896  val=0.5511  lr=3.24e-04  time=3.7s
+Epoch  83/200  train=0.3865  val=0.5422  lr=3.20e-04  time=3.7s
+  -> saved checkpoint (val=0.5422)
+Epoch  84/200  train=0.3754  val=0.5416  lr=3.16e-04  time=3.7s
+  -> saved checkpoint (val=0.5416)
+Epoch  85/200  train=0.4261  val=0.5468  lr=3.13e-04  time=3.7s
+Epoch  86/200  train=0.4029  val=0.5476  lr=3.09e-04  time=3.7s
+Epoch  87/200  train=0.3584  val=0.5447  lr=3.05e-04  time=3.8s
+Epoch  88/200  train=0.3957  val=0.5425  lr=3.01e-04  time=3.7s
+Epoch  89/200  train=0.4145  val=0.5646  lr=2.97e-04  time=3.8s
+Epoch  90/200  train=0.3768  val=0.5383  lr=2.93e-04  time=3.8s
+  -> saved checkpoint (val=0.5383)
+Epoch  91/200  train=0.3761  val=0.5570  lr=2.90e-04  time=3.8s
+Epoch  92/200  train=0.3836  val=0.5374  lr=2.86e-04  time=3.8s
+  -> saved checkpoint (val=0.5374)
+Epoch  93/200  train=0.3559  val=0.5419  lr=2.82e-04  time=3.9s
+Epoch  94/200  train=0.3715  val=0.5397  lr=2.78e-04  time=3.8s
+Epoch  95/200  train=0.3841  val=0.5409  lr=2.74e-04  time=3.8s
+Epoch  96/200  train=0.3782  val=0.5367  lr=2.70e-04  time=3.8s
+  -> saved checkpoint (val=0.5367)
+Epoch  97/200  train=0.3783  val=0.5422  lr=2.66e-04  time=3.8s
+Epoch  98/200  train=0.3576  val=0.5407  lr=2.62e-04  time=3.8s
+Epoch  99/200  train=0.3702  val=0.5396  lr=2.58e-04  time=3.8s
+Epoch 100/200  train=0.3713  val=0.5367  lr=2.54e-04  time=3.9s
+  -> saved checkpoint (val=0.5367)
+Epoch 101/200  train=0.3822  val=0.5363  lr=2.50e-04  time=3.8s
+  -> saved checkpoint (val=0.5363)
+Epoch 102/200  train=0.3872  val=0.5351  lr=2.47e-04  time=3.8s
+  -> saved checkpoint (val=0.5351)
+Epoch 103/200  train=0.3890  val=0.5367  lr=2.43e-04  time=3.8s
+Epoch 104/200  train=0.3582  val=0.5410  lr=2.39e-04  time=3.8s
+Epoch 105/200  train=0.3732  val=0.5480  lr=2.35e-04  time=3.8s
+Epoch 106/200  train=0.3649  val=0.5324  lr=2.31e-04  time=3.9s
+  -> saved checkpoint (val=0.5324)
+Epoch 107/200  train=0.3560  val=0.5326  lr=2.27e-04  time=3.8s
+Epoch 108/200  train=0.3704  val=0.5360  lr=2.23e-04  time=3.7s
+Epoch 109/200  train=0.3965  val=0.5355  lr=2.19e-04  time=3.7s
+Epoch 110/200  train=0.3634  val=0.5341  lr=2.15e-04  time=3.7s
+Epoch 111/200  train=0.3822  val=0.5338  lr=2.11e-04  time=3.7s
+Epoch 112/200  train=0.3764  val=0.5313  lr=2.08e-04  time=3.7s
+  -> saved checkpoint (val=0.5313)
+Epoch 113/200  train=0.3770  val=0.5367  lr=2.04e-04  time=3.8s
+Epoch 114/200  train=0.3977  val=0.5314  lr=2.00e-04  time=3.7s
+Epoch 115/200  train=0.3414  val=0.5347  lr=1.96e-04  time=3.7s
+Epoch 116/200  train=0.3983  val=0.5310  lr=1.92e-04  time=3.7s
+  -> saved checkpoint (val=0.5310)
+Epoch 117/200  train=0.3857  val=0.5336  lr=1.88e-04  time=3.7s
+Epoch 118/200  train=0.3498  val=0.5352  lr=1.85e-04  time=3.7s
+Epoch 119/200  train=0.3565  val=0.5407  lr=1.81e-04  time=3.8s
+Epoch 120/200  train=0.3549  val=0.5332  lr=1.77e-04  time=3.7s
+Epoch 121/200  train=0.3625  val=0.5319  lr=1.73e-04  time=3.7s
+Epoch 122/200  train=0.3831  val=0.5372  lr=1.70e-04  time=3.7s
+Epoch 123/200  train=0.3677  val=0.5321  lr=1.66e-04  time=3.7s
+Epoch 124/200  train=0.3714  val=0.5308  lr=1.62e-04  time=3.7s
+  -> saved checkpoint (val=0.5308)
+Epoch 125/200  train=0.3664  val=0.5313  lr=1.59e-04  time=3.7s
+Epoch 126/200  train=0.3444  val=0.5289  lr=1.55e-04  time=3.8s
+  -> saved checkpoint (val=0.5289)
+Epoch 127/200  train=0.3785  val=0.5298  lr=1.51e-04  time=3.7s
+Epoch 128/200  train=0.3455  val=0.5334  lr=1.48e-04  time=3.7s
+Epoch 129/200  train=0.3748  val=0.5281  lr=1.44e-04  time=3.7s
+  -> saved checkpoint (val=0.5281)
+Epoch 130/200  train=0.3523  val=0.5284  lr=1.41e-04  time=3.7s
+Epoch 131/200  train=0.3590  val=0.5304  lr=1.37e-04  time=3.7s
+Epoch 132/200  train=0.4280  val=0.5304  lr=1.34e-04  time=3.7s
+Epoch 133/200  train=0.3943  val=0.5322  lr=1.30e-04  time=3.8s
+Epoch 134/200  train=0.3425  val=0.5283  lr=1.27e-04  time=3.7s
+Epoch 135/200  train=0.3541  val=0.5273  lr=1.23e-04  time=3.7s
+  -> saved checkpoint (val=0.5273)
+Epoch 136/200  train=0.3718  val=0.5269  lr=1.20e-04  time=3.7s
+  -> saved checkpoint (val=0.5269)
+Epoch 137/200  train=0.3662  val=0.5402  lr=1.17e-04  time=3.7s
+Epoch 138/200  train=0.3602  val=0.5280  lr=1.14e-04  time=3.7s
+Epoch 139/200  train=0.3674  val=0.5275  lr=1.10e-04  time=3.8s
+Epoch 140/200  train=0.3578  val=0.5289  lr=1.07e-04  time=3.7s
+Epoch 141/200  train=0.3836  val=0.5255  lr=1.04e-04  time=3.7s
+  -> saved checkpoint (val=0.5255)
+Epoch 142/200  train=0.3557  val=0.5330  lr=1.01e-04  time=3.7s
+Epoch 143/200  train=0.3528  val=0.5261  lr=9.76e-05  time=3.7s
+Epoch 144/200  train=0.3673  val=0.5253  lr=9.45e-05  time=3.7s
+  -> saved checkpoint (val=0.5253)
+Epoch 145/200  train=0.3658  val=0.5261  lr=9.15e-05  time=3.8s
+Epoch 146/200  train=0.3325  val=0.5265  lr=8.85e-05  time=3.7s
+Epoch 147/200  train=0.3700  val=0.5268  lr=8.55e-05  time=3.7s
+Epoch 148/200  train=0.3416  val=0.5251  lr=8.26e-05  time=3.7s
+  -> saved checkpoint (val=0.5251)
+Epoch 149/200  train=0.3501  val=0.5261  lr=7.97e-05  time=3.7s
+Epoch 150/200  train=0.3474  val=0.5252  lr=7.69e-05  time=3.7s
+Epoch 151/200  train=0.3502  val=0.5247  lr=7.41e-05  time=3.7s
+  -> saved checkpoint (val=0.5247)
+Epoch 152/200  train=0.3498  val=0.5243  lr=7.13e-05  time=3.8s
+  -> saved checkpoint (val=0.5243)
+Epoch 153/200  train=0.3663  val=0.5249  lr=6.86e-05  time=3.7s
+Epoch 154/200  train=0.3665  val=0.5271  lr=6.60e-05  time=3.7s
+Epoch 155/200  train=0.3572  val=0.5248  lr=6.33e-05  time=3.7s
+Epoch 156/200  train=0.3744  val=0.5239  lr=6.08e-05  time=3.7s
+  -> saved checkpoint (val=0.5239)
+Epoch 157/200  train=0.3549  val=0.5232  lr=5.83e-05  time=3.7s
+  -> saved checkpoint (val=0.5232)
+Epoch 158/200  train=0.3424  val=0.5242  lr=5.58e-05  time=3.8s
+Epoch 159/200  train=0.3653  val=0.5235  lr=5.34e-05  time=3.7s
+Epoch 160/200  train=0.3789  val=0.5235  lr=5.10e-05  time=3.7s
+Epoch 161/200  train=0.3713  val=0.5239  lr=4.87e-05  time=3.7s
+Epoch 162/200  train=0.3409  val=0.5241  lr=4.64e-05  time=3.7s
+Epoch 163/200  train=0.3559  val=0.5231  lr=4.41e-05  time=3.7s
+  -> saved checkpoint (val=0.5231)
+Epoch 164/200  train=0.3521  val=0.5239  lr=4.20e-05  time=3.7s
+Epoch 165/200  train=0.3546  val=0.5237  lr=3.98e-05  time=3.8s
+Epoch 166/200  train=0.3545  val=0.5234  lr=3.78e-05  time=3.7s
+Epoch 167/200  train=0.3450  val=0.5229  lr=3.57e-05  time=3.7s
+  -> saved checkpoint (val=0.5229)
+Epoch 168/200  train=0.3638  val=0.5232  lr=3.38e-05  time=3.7s
+Epoch 169/200  train=0.3630  val=0.5237  lr=3.19e-05  time=3.7s
+Epoch 170/200  train=0.3593  val=0.5224  lr=3.00e-05  time=3.7s
+  -> saved checkpoint (val=0.5224)
+Epoch 171/200  train=0.3452  val=0.5240  lr=2.82e-05  time=3.8s
+Epoch 172/200  train=0.4234  val=0.5230  lr=2.64e-05  time=3.7s
+Epoch 173/200  train=0.3623  val=0.5231  lr=2.47e-05  time=3.7s
+Epoch 174/200  train=0.3657  val=0.5228  lr=2.31e-05  time=3.7s
+Epoch 175/200  train=0.3239  val=0.5234  lr=2.15e-05  time=3.7s
+Epoch 176/200  train=0.4998  val=0.5233  lr=2.00e-05  time=3.7s
+Epoch 177/200  train=0.3483  val=0.5226  lr=1.85e-05  time=3.8s
+Epoch 178/200  train=0.3619  val=0.5221  lr=1.71e-05  time=3.7s
+  -> saved checkpoint (val=0.5221)
+Epoch 179/200  train=0.3464  val=0.5225  lr=1.58e-05  time=3.7s
+Epoch 180/200  train=0.3513  val=0.5229  lr=1.45e-05  time=3.7s
+Epoch 181/200  train=0.3412  val=0.5230  lr=1.32e-05  time=3.7s
+Epoch 182/200  train=0.3358  val=0.5229  lr=1.20e-05  time=3.7s
+Epoch 183/200  train=0.3739  val=0.5227  lr=1.09e-05  time=3.7s
+Epoch 184/200  train=0.3540  val=0.5226  lr=9.84e-06  time=3.8s
+Epoch 185/200  train=0.3649  val=0.5226  lr=8.84e-06  time=3.7s
+Epoch 186/200  train=0.3697  val=0.5227  lr=7.89e-06  time=3.7s
+Epoch 187/200  train=0.3613  val=0.5225  lr=7.01e-06  time=3.7s
+Epoch 188/200  train=0.3578  val=0.5224  lr=6.18e-06  time=3.7s
+Epoch 189/200  train=0.3796  val=0.5224  lr=5.42e-06  time=3.7s
+Epoch 190/200  train=0.3651  val=0.5224  lr=4.72e-06  time=3.8s
+Epoch 191/200  train=0.3537  val=0.5225  lr=4.07e-06  time=3.7s
+Epoch 192/200  train=0.3337  val=0.5224  lr=3.49e-06  time=3.7s
+Epoch 193/200  train=0.3512  val=0.5223  lr=2.97e-06  time=3.7s
+Epoch 194/200  train=0.3374  val=0.5223  lr=2.51e-06  time=3.7s
+Epoch 195/200  train=0.3461  val=0.5224  lr=2.11e-06  time=3.7s
+Epoch 196/200  train=0.3651  val=0.5224  lr=1.77e-06  time=3.7s
+Epoch 197/200  train=0.3509  val=0.5224  lr=1.49e-06  time=3.8s
+Epoch 198/200  train=0.3402  val=0.5224  lr=1.28e-06  time=3.7s
+Epoch 199/200  train=0.3544  val=0.5225  lr=1.12e-06  time=3.7s
+Epoch 200/200  train=0.3415  val=0.5225  lr=1.03e-06  time=3.7s
+
+Probe training complete. Best val loss: 0.5221
+Losses saved to: results/probe_losses.csv
+=== Stage: probe_baseline ===
+Low drift floats:    140
+Depth observations:  1,121,134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  96 floats  (21 with O2)
+  test  :  25 floats  (7 with O2)
+  probe :  19 floats  (6 with O2)
+
+Row counts by split:
+split
+train    733358
+test     224767
+probe    163009
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                 9    17     60
+Probe casts: 2233
+Using device: cuda
+Computing oxygen normalization stats...
+Oxygen stats — mean: 0.10, std: 0.20
+Building probe windows...
+Probe windows: 1082
+Epoch   1/100  train=64.7085  val=22.9263  time=3.2s
+  -> saved checkpoint (val=22.9263)
+Epoch   2/100  train=4.4605  val=1.2274  time=3.2s
+  -> saved checkpoint (val=1.2274)
+Epoch   3/100  train=1.0764  val=1.2012  time=3.3s
+  -> saved checkpoint (val=1.2012)
+Epoch   4/100  train=0.7535  val=1.1076  time=3.2s
+  -> saved checkpoint (val=1.1076)
+Epoch   5/100  train=0.7456  val=1.0692  time=3.2s
+  -> saved checkpoint (val=1.0692)
+Epoch   6/100  train=0.8007  val=1.0378  time=3.2s
+  -> saved checkpoint (val=1.0378)
+Epoch   7/100  train=0.6906  val=1.0144  time=3.2s
+  -> saved checkpoint (val=1.0144)
+Epoch   8/100  train=0.6689  val=0.9835  time=3.2s
+  -> saved checkpoint (val=0.9835)
+Epoch   9/100  train=0.6396  val=0.9644  time=3.2s
+  -> saved checkpoint (val=0.9644)
+Epoch  10/100  train=0.6009  val=0.9386  time=3.2s
+  -> saved checkpoint (val=0.9386)
+Epoch  11/100  train=0.6309  val=0.9415  time=3.2s
+Epoch  12/100  train=0.6531  val=0.9098  time=3.2s
+  -> saved checkpoint (val=0.9098)
+Epoch  13/100  train=0.6080  val=0.8949  time=3.2s
+  -> saved checkpoint (val=0.8949)
+Epoch  14/100  train=0.5947  val=0.8988  time=3.3s
+Epoch  15/100  train=0.6030  val=0.8746  time=3.2s
+  -> saved checkpoint (val=0.8746)
+Epoch  16/100  train=0.6036  val=0.8660  time=3.2s
+  -> saved checkpoint (val=0.8660)
+Epoch  17/100  train=0.6044  val=0.8679  time=3.2s
+Epoch  18/100  train=0.5732  val=0.8603  time=3.2s
+  -> saved checkpoint (val=0.8603)
+Epoch  19/100  train=0.5782  val=0.8523  time=3.2s
+  -> saved checkpoint (val=0.8523)
+Epoch  20/100  train=0.5665  val=0.8600  time=3.2s
+Epoch  21/100  train=0.5894  val=0.8451  time=3.2s
+  -> saved checkpoint (val=0.8451)
+Epoch  22/100  train=0.5758  val=0.8434  time=3.2s
+  -> saved checkpoint (val=0.8434)
+Epoch  23/100  train=0.5676  val=0.8390  time=3.2s
+  -> saved checkpoint (val=0.8390)
+Epoch  24/100  train=0.6332  val=0.8340  time=3.4s
+  -> saved checkpoint (val=0.8340)
+Epoch  25/100  train=0.7031  val=0.8338  time=3.2s
+  -> saved checkpoint (val=0.8338)
+Epoch  26/100  train=0.6082  val=0.8279  time=3.2s
+  -> saved checkpoint (val=0.8279)
+Epoch  27/100  train=0.5637  val=0.8328  time=3.2s
+Epoch  28/100  train=0.5926  val=0.8276  time=3.2s
+  -> saved checkpoint (val=0.8276)
+Epoch  29/100  train=0.6407  val=0.8252  time=3.2s
+  -> saved checkpoint (val=0.8252)
+Epoch  30/100  train=0.5647  val=1.0171  time=3.2s
+Epoch  31/100  train=0.6702  val=0.8214  time=3.2s
+  -> saved checkpoint (val=0.8214)
+Epoch  32/100  train=0.5765  val=0.8233  time=3.2s
+Epoch  33/100  train=0.5778  val=0.8218  time=3.2s
+Epoch  34/100  train=0.5926  val=0.8282  time=3.3s
+Epoch  35/100  train=0.5865  val=0.8202  time=3.2s
+  -> saved checkpoint (val=0.8202)
+Epoch  36/100  train=0.6648  val=0.8208  time=3.2s
+Epoch  37/100  train=0.7108  val=0.8177  time=3.2s
+  -> saved checkpoint (val=0.8177)
+Epoch  38/100  train=0.5921  val=0.8150  time=3.2s
+  -> saved checkpoint (val=0.8150)
+Epoch  39/100  train=0.5811  val=0.8236  time=3.2s
+Epoch  40/100  train=0.6450  val=0.8181  time=3.2s
+Epoch  41/100  train=0.5576  val=0.8184  time=3.2s
+Epoch  42/100  train=0.6454  val=0.8473  time=3.2s
+Epoch  43/100  train=0.5744  val=0.8134  time=3.2s
+  -> saved checkpoint (val=0.8134)
+Epoch  44/100  train=0.5376  val=0.8207  time=3.3s
+Epoch  45/100  train=0.6066  val=0.8214  time=3.2s
+Epoch  46/100  train=0.5699  val=0.8203  time=3.2s
+Epoch  47/100  train=0.5868  val=0.8117  time=3.2s
+  -> saved checkpoint (val=0.8117)
+Epoch  48/100  train=0.6059  val=0.8348  time=3.2s
+Epoch  49/100  train=0.5739  val=0.8812  time=3.2s
+Epoch  50/100  train=0.5881  val=0.9849  time=3.2s
+Epoch  51/100  train=0.6347  val=0.8067  time=3.2s
+  -> saved checkpoint (val=0.8067)
+Epoch  52/100  train=0.5597  val=0.8182  time=3.2s
+Epoch  53/100  train=0.5839  val=0.8483  time=3.2s
+Epoch  54/100  train=0.5778  val=0.8260  time=3.3s
+Epoch  55/100  train=0.6575  val=0.8220  time=3.2s
+Epoch  56/100  train=0.5683  val=0.8472  time=3.2s
+Epoch  57/100  train=0.6195  val=0.8381  time=3.2s
+Epoch  58/100  train=0.5773  val=0.8491  time=3.2s
+Epoch  59/100  train=0.5774  val=0.8819  time=3.2s
+Epoch  60/100  train=0.5770  val=0.8484  time=3.2s
+Epoch  61/100  train=0.6983  val=0.8372  time=3.2s
+Epoch  62/100  train=0.6042  val=0.9887  time=3.2s
+Epoch  63/100  train=0.5981  val=0.8622  time=3.2s
+Epoch  64/100  train=0.6527  val=0.8274  time=3.2s
+Epoch  65/100  train=0.6458  val=0.8056  time=3.3s
+  -> saved checkpoint (val=0.8056)
+Epoch  66/100  train=0.5774  val=0.8119  time=3.2s
+Epoch  67/100  train=0.6378  val=0.8746  time=3.2s
+Epoch  68/100  train=0.5994  val=0.8808  time=3.2s
+Epoch  69/100  train=0.6199  val=0.8261  time=3.2s
+Epoch  70/100  train=0.6047  val=0.9628  time=3.2s
+Epoch  71/100  train=0.6828  val=0.9963  time=3.2s
+Epoch  72/100  train=0.6440  val=0.8103  time=3.2s
+Epoch  73/100  train=0.5873  val=0.8520  time=3.2s
+Epoch  74/100  train=0.5631  val=0.8129  time=3.3s
+Epoch  75/100  train=0.6147  val=0.8081  time=3.2s
+Epoch  76/100  train=0.7222  val=1.5153  time=3.2s
+Epoch  77/100  train=0.9610  val=3.0151  time=3.2s
+Epoch  78/100  train=0.8131  val=0.9184  time=3.2s
+Epoch  79/100  train=0.7400  val=1.1506  time=3.2s
+Epoch  80/100  train=0.6906  val=0.8113  time=3.2s
+Epoch  81/100  train=1.4559  val=7.0083  time=3.2s
+Epoch  82/100  train=4.5544  val=6.1781  time=3.2s
+Epoch  83/100  train=5.3339  val=5.1855  time=3.2s
+Epoch  84/100  train=1.2167  val=0.8082  time=3.4s
+Epoch  85/100  train=0.6254  val=0.8671  time=3.2s
+Epoch  86/100  train=0.5749  val=0.8487  time=3.2s
+Epoch  87/100  train=0.5713  val=0.8085  time=3.2s
+Epoch  88/100  train=0.5703  val=0.8146  time=3.2s
+Epoch  89/100  train=0.5684  val=0.8128  time=3.2s
+Epoch  90/100  train=0.5751  val=0.8136  time=3.2s
+Epoch  91/100  train=0.5808  val=0.8470  time=3.2s
+Epoch  92/100  train=0.5476  val=0.8195  time=3.2s
+Epoch  93/100  train=0.6198  val=0.8389  time=3.2s
+Epoch  94/100  train=0.6054  val=0.8145  time=3.2s
+Epoch  95/100  train=0.5498  val=0.8210  time=3.4s
+Epoch  96/100  train=0.5604  val=0.9038  time=3.2s
+Epoch  97/100  train=0.6627  val=1.0873  time=3.2s
+Epoch  98/100  train=0.6381  val=0.8106  time=3.2s
+Epoch  99/100  train=0.5947  val=0.8244  time=3.2s
+Epoch 100/100  train=0.5705  val=0.8766  time=3.2s
+
+Baseline training complete. Best val loss: 0.8056
+Checkpoint saved to: checkpoints/probe_baseline_best.pt
+=== Stage: gru_probe ===
+Low drift floats:    140
+Depth observations:  1,121,134
+
+Region distribution:
+region
+tropics               86
+northeast_atlantic    24
+subpolar              16
+subtropical_west       6
+subtropical_east       5
+northwest_atlantic     3
+Name: count, dtype: int64
+
+O2 floats: 34 / 140
+  Region 'northwest_atlantic' has only 3 remaining floats — assigning all to train
+  Region 'subtropical_east' has only 4 remaining floats — assigning all to train
+
+Float counts by split:
+  train :  96 floats  (21 with O2)
+  test  :  25 floats  (7 with O2)
+  probe :  19 floats  (6 with O2)
+
+Row counts by split:
+split
+train    733358
+test     224767
+probe    163009
+Name: count, dtype: int64
+
+Float counts by region and split:
+split               probe  test  train
+region                                
+northeast_atlantic      4     4     16
+northwest_atlantic      0     0      3
+subpolar                3     3     10
+subtropical_east        1     0      4
+subtropical_west        2     1      3
+tropics                 9    17     60
+Probe casts: 2233
+Using device: cuda
+Computing oxygen normalization stats...
+Oxygen stats — mean: 0.10, std: 0.20
+Building probe windows...
+Probe windows: 1082
+Epoch   1/100  train=21.3451  val=1.1639  time=3.3s
+  -> saved checkpoint (val=1.1639)
+Epoch   2/100  train=1.2700  val=1.0540  time=3.3s
+  -> saved checkpoint (val=1.0540)
+Epoch   3/100  train=0.6491  val=0.8909  time=3.3s
+  -> saved checkpoint (val=0.8909)
+Epoch   4/100  train=0.5369  val=0.7828  time=3.3s
+  -> saved checkpoint (val=0.7828)
+Epoch   5/100  train=0.5454  val=0.7466  time=3.3s
+  -> saved checkpoint (val=0.7466)
+Epoch   6/100  train=0.5110  val=0.7412  time=3.4s
+  -> saved checkpoint (val=0.7412)
+Epoch   7/100  train=0.4814  val=0.6931  time=3.3s
+  -> saved checkpoint (val=0.6931)
+Epoch   8/100  train=0.4775  val=0.7088  time=3.3s
+Epoch   9/100  train=0.4635  val=0.6633  time=3.3s
+  -> saved checkpoint (val=0.6633)
+Epoch  10/100  train=0.4610  val=0.6620  time=3.3s
+  -> saved checkpoint (val=0.6620)
+Epoch  11/100  train=0.4416  val=0.6508  time=3.3s
+  -> saved checkpoint (val=0.6508)
+Epoch  12/100  train=0.4272  val=0.6448  time=3.3s
+  -> saved checkpoint (val=0.6448)
+Epoch  13/100  train=0.4581  val=0.6360  time=3.4s
+  -> saved checkpoint (val=0.6360)
+Epoch  14/100  train=0.4617  val=0.6393  time=3.3s
+Epoch  15/100  train=0.4662  val=0.6561  time=3.3s
+Epoch  16/100  train=0.4543  val=0.6414  time=3.3s
+Epoch  17/100  train=0.4570  val=0.6294  time=3.3s
+  -> saved checkpoint (val=0.6294)
+Epoch  18/100  train=0.5027  val=0.6389  time=3.3s
+Epoch  19/100  train=0.4578  val=0.6379  time=3.4s
+Epoch  20/100  train=0.4455  val=0.6168  time=3.3s
+  -> saved checkpoint (val=0.6168)
+Epoch  21/100  train=0.5037  val=0.6275  time=3.3s
+Epoch  22/100  train=0.5126  val=0.6217  time=3.3s
+Epoch  23/100  train=0.4663  val=0.6277  time=3.3s
+Epoch  24/100  train=0.4411  val=0.6333  time=3.3s
+Epoch  25/100  train=0.4482  val=0.6337  time=3.3s
+Epoch  26/100  train=0.5102  val=0.6218  time=3.4s
+Epoch  27/100  train=0.4723  val=0.6166  time=3.3s
+  -> saved checkpoint (val=0.6166)
+Epoch  28/100  train=0.4295  val=0.6144  time=3.3s
+  -> saved checkpoint (val=0.6144)
+Epoch  29/100  train=0.4411  val=0.6070  time=3.3s
+  -> saved checkpoint (val=0.6070)
+Epoch  30/100  train=0.4400  val=0.6118  time=3.3s
+Epoch  31/100  train=0.4393  val=0.6502  time=3.3s
+Epoch  32/100  train=0.5481  val=0.6024  time=3.4s
+  -> saved checkpoint (val=0.6024)
+Epoch  33/100  train=0.4486  val=0.6110  time=3.3s
+Epoch  34/100  train=0.4004  val=0.6093  time=3.3s
+Epoch  35/100  train=0.4566  val=0.6217  time=3.3s
+Epoch  36/100  train=0.4181  val=0.6046  time=3.3s
+Epoch  37/100  train=0.4144  val=0.6024  time=3.3s
+Epoch  38/100  train=0.4148  val=0.6010  time=3.3s
+  -> saved checkpoint (val=0.6010)
+Epoch  39/100  train=0.4360  val=0.6319  time=3.4s
+Epoch  40/100  train=0.4998  val=0.6202  time=3.3s
+Epoch  41/100  train=0.4162  val=0.6040  time=3.3s
+Epoch  42/100  train=0.4233  val=0.6115  time=3.3s
+Epoch  43/100  train=0.4568  val=0.6258  time=3.3s
+Epoch  44/100  train=0.4182  val=0.5968  time=3.3s
+  -> saved checkpoint (val=0.5968)
+Epoch  45/100  train=0.4087  val=0.6202  time=3.3s
+Epoch  46/100  train=0.4011  val=0.5974  time=3.3s
+Epoch  47/100  train=0.4189  val=0.6035  time=3.3s
+Epoch  48/100  train=0.6188  val=0.6002  time=3.3s
+Epoch  49/100  train=0.4390  val=0.6061  time=3.3s
+Epoch  50/100  train=0.4348  val=0.6016  time=3.3s
+Epoch  51/100  train=0.4013  val=0.6007  time=3.4s
+Epoch  52/100  train=0.4615  val=0.5960  time=3.3s
+  -> saved checkpoint (val=0.5960)
+Epoch  53/100  train=0.4223  val=0.6003  time=3.3s
+Epoch  54/100  train=0.4112  val=0.5882  time=3.3s
+  -> saved checkpoint (val=0.5882)
+Epoch  55/100  train=0.4024  val=0.5995  time=3.3s
+Epoch  56/100  train=0.4182  val=0.5906  time=3.3s
+Epoch  57/100  train=0.3963  val=0.5947  time=3.3s
+Epoch  58/100  train=0.4153  val=0.5915  time=3.4s
+Epoch  59/100  train=0.3944  val=0.5885  time=3.3s
+Epoch  60/100  train=0.4060  val=0.5898  time=3.3s
+Epoch  61/100  train=0.4618  val=0.5958  time=3.3s
+Epoch  62/100  train=0.4801  val=0.5913  time=3.3s
+Epoch  63/100  train=0.4107  val=0.5899  time=3.3s
+Epoch  64/100  train=0.4418  val=0.5990  time=3.3s
+Epoch  65/100  train=0.3859  val=0.5993  time=3.3s
+Epoch  66/100  train=0.3844  val=0.5915  time=3.3s
+Epoch  67/100  train=0.4279  val=0.6006  time=3.3s
+Epoch  68/100  train=0.4364  val=0.5959  time=3.3s
+Epoch  69/100  train=0.4153  val=0.5932  time=3.3s
+Epoch  70/100  train=0.3930  val=0.6004  time=3.3s
+Epoch  71/100  train=0.4061  val=0.5887  time=3.4s
+Epoch  72/100  train=0.4034  val=0.6042  time=3.3s
+Epoch  73/100  train=0.3948  val=0.6127  time=3.3s
+Epoch  74/100  train=0.3972  val=0.5867  time=3.3s
+  -> saved checkpoint (val=0.5867)
+Epoch  75/100  train=0.4070  val=0.5966  time=3.3s
+Epoch  76/100  train=0.3979  val=0.5879  time=3.3s
+Epoch  77/100  train=0.4017  val=0.5906  time=3.4s
+Epoch  78/100  train=0.4060  val=0.5860  time=3.3s
+  -> saved checkpoint (val=0.5860)
+Epoch  79/100  train=0.4246  val=0.5889  time=3.3s
+Epoch  80/100  train=0.3751  val=0.6086  time=3.3s
+Epoch  81/100  train=0.3912  val=0.5874  time=3.3s
+Epoch  82/100  train=0.4360  val=0.5888  time=3.3s
+Epoch  83/100  train=0.4397  val=0.5964  time=3.3s
+Epoch  84/100  train=0.4079  val=0.5951  time=3.4s
+Epoch  85/100  train=0.4143  val=0.5936  time=3.3s
+Epoch  86/100  train=0.4114  val=0.5967  time=3.3s
+Epoch  87/100  train=0.4103  val=0.5940  time=3.3s
+Epoch  88/100  train=0.3963  val=0.5847  time=3.3s
+  -> saved checkpoint (val=0.5847)
+Epoch  89/100  train=0.3966  val=0.5953  time=3.3s
+Epoch  90/100  train=0.4020  val=0.6191  time=3.4s
+Epoch  91/100  train=0.4001  val=0.5878  time=3.3s
+Epoch  92/100  train=0.3867  val=0.5876  time=3.3s
+Epoch  93/100  train=0.4031  val=0.5888  time=3.3s
+Epoch  94/100  train=0.4027  val=0.6367  time=3.3s
+Epoch  95/100  train=0.4258  val=0.5972  time=3.3s
+Epoch  96/100  train=0.3993  val=0.5887  time=3.3s
+Epoch  97/100  train=0.3956  val=0.5928  time=3.4s
+Epoch  98/100  train=0.3977  val=0.5777  time=3.3s
+  -> saved checkpoint (val=0.5777)
+Epoch  99/100  train=0.3903  val=0.6012  time=3.3s
+Epoch 100/100  train=0.4328  val=0.5793  time=3.3s
+
+GRU probe training complete. Best val loss: 0.5777
+Losses saved to: results/gru_probe_losses.csv
+=== Stage: extrapolation ===
+Using device: cuda
+Loading latent cycles from checkpoints/latent_cycles.pt
+Val windows (horizon=100): 18
+
+Evaluating: ode
+  horizon=5 (50 days)...
+  -> final step MSE: 0.0566
+  horizon=10 (100 days)...
+  -> final step MSE: 0.1019
+  horizon=15 (150 days)...
+  -> final step MSE: 0.1619
+  horizon=20 (200 days)...
+  -> final step MSE: 0.2079
+  horizon=30 (300 days)...
+  -> final step MSE: 0.3905
+  horizon=40 (400 days)...
+  -> final step MSE: 0.7636
+  horizon=50 (500 days)...
+  -> final step MSE: 1.6474
+  horizon=100 (1000 days)...
+  -> final step MSE: 62.3035
+
+Evaluating: gru
+  horizon=5 (50 days)...
+  -> final step MSE: 0.0565
+  horizon=10 (100 days)...
+  -> final step MSE: 0.0456
+  horizon=15 (150 days)...
+  -> final step MSE: 0.0519
+  horizon=20 (200 days)...
+  -> final step MSE: 0.0446
+  horizon=30 (300 days)...
+  -> final step MSE: 0.0656
+  horizon=40 (400 days)...
+  -> final step MSE: 0.0632
+  horizon=50 (500 days)...
+  -> final step MSE: 0.1041
+  horizon=100 (1000 days)...
+  -> final step MSE: 0.1052
+
+Results saved to results/extrapolation_results.csv
+
+=== Extrapolation Summary (final step MSE) ===
+model         depth_only       gru        ode
+horizon_days                                 
+50                0.0274  0.056528   0.056636
+100               0.0274  0.045559   0.101876
+150               0.0274  0.051948   0.161882
+200               0.0274  0.044570   0.207907
+300               0.0274  0.065641   0.390509
+400               0.0274  0.063237   0.763600
+500               0.0274  0.104112   1.647390
+1000              0.0274  0.105196  62.303474
+======================================================
+End Time : Thu Apr 16 02:44:41 AM EDT 2026
+======================================================
