@@ -40,16 +40,17 @@ def make_plot(highlight_var, highlight_color, filename, title):
     else:
         highlight_floats = float_coverage[float_coverage[highlight_var]].index.tolist()
         gray_floats = [f for f in all_floats if f not in highlight_floats]
-        draw_trajectories(ax, gray_floats, '#3a3a4a', alpha=0.3, lw=0.6)
+        draw_trajectories(ax, gray_floats, '#1e3a5f', alpha=0.5, lw=0.6)
+
         draw_trajectories(ax, highlight_floats, highlight_color, alpha=0.9, lw=1.4)
         n = len(highlight_floats)
         legend_elements = [
-            plt.Line2D([0],[0], color='#3a3a4a', linewidth=2, label='No data'),
+            plt.Line2D([0],[0], color='#1e3a5f', linewidth=2, label='No data'),
             plt.Line2D([0],[0], color=highlight_color, linewidth=2, label=f'{highlight_var} ({n} floats)'),
         ]
 
     legend = ax.legend(handles=legend_elements, loc='lower center',
-              bbox_to_anchor=(0.5, 0.05),
+              bbox_to_anchor=(0.5, 0.12),
               facecolor='#1a1a2e', edgecolor='#555', labelcolor='white',
               fontsize=11, framealpha=0.8)
 
