@@ -39,13 +39,13 @@ LAMBDA_OXY     = 0.5
 ## Training ##
 ENCODER_LR     = 1e-3
 ENCODER_EPOCHS = 80
-ODE_LR         = 2e-4      # was 5e-4, reduce to dampen spikes
-ODE_EPOCHS     = 150       # a bit more room since LR is lower
+ODE_LR         = 1e-4      # was 5e-4, reduce to dampen spikes
+ODE_EPOCHS     = 80       # a bit more room since LR is lower
 BATCH_SIZE     = 32
-PROBE_LR       = 1e-4
-PROBE_EPOCHS   = 100
+PROBE_LR       = 5e-4
+PROBE_EPOCHS   = 200
 WINDOW_SIZE    = 25
 STRIDE         = 2
-
+ODE_METHOD = "rk4"
 CURRICULUM_WINDOWS  = [10]
 CURRICULUM_WEIGHTS  = [1.0]
