@@ -1,14 +1,11 @@
 import numpy as np
 
 ## Data paths ##
-#LOW_DRIFT_PATH = "data/processed/all_low_drift_oxygen_devices.csv"
-#PFL1_PATH      = "data/processed/PFL1_preprocessed.csv"
-INTERP_PATH    = "data/processed/PFL1_interp72.csv"  # split.py handles PFL2/3 internally
-
+INTERP_PATH    = "data/processed/PFL1_interp72.csv"
 LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
 
 ## Variables ##
-INPUT_VARS       = ['Temperature','Oxygen', 'Salinity']
+INPUT_VARS       = ['Temperature', 'Salinity', 'Oxygen']
 TARGET_VARS      = ['Chlorophyll']
 ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']
 MIN_TARGET_PROBE = 4
@@ -17,12 +14,13 @@ MIN_TARGET_PROBE = 4
 DEPTH_STRIDE = 1
 DEVICE      = "cuda"
 RESULTS_DIR = "results/vanilla"
+
 ## Interpolation grid (73 levels, 0–2000m) ##
 DEPTH_GRID = np.concatenate([
-    np.arange(0,    200,  10),    # 0, 10, 20, ... 190   (21 levels — mixed layer)
-    np.arange(200,  1000, 25),    # 200, 225, ... 975     (32 levels — thermocline)
-    np.arange(1000, 2001, 50),    # 1000, 1050, ... 2000  (21 levels — deep water)
-])  # 73 levels total
+    np.arange(0,    200,  10),
+    np.arange(200,  1000, 25),
+    np.arange(1000, 2001, 50),
+])
 
 ## Split ##
 TRAIN_FRAC = 0.70
@@ -31,30 +29,23 @@ PROBE_FRAC = 0.10
 SEED       = 42
 
 ## Model hyperparameters ##
-LATENT_DIM     = 32                      # reduce capacity
-ENCODER_HIDDEN = [64, 64]
-DECODER_HIDDEN = [32, 32]
-ODE_HIDDEN     = [128, 128,128]                # much smaller, smoother dynamics
-
-LAMBDA_ODE     = 1.0                     # stronger regularization on dynamics
+LATENT_DIM     = 32
+ENCODER_HIDDEN = [128, 128]
+DECODER_HIDDEN = [64, 64]
+ODE_HIDDEN     = [128, 128, 128]
+LAMBDA_ODE     = 0.5
 LAMBDA_OXY     = 0.5
 
-ODE_METHOD = 'rk4'                       # keep fixed-step, but see note below
-
 ## Training ##
-ENCODER_LR     = 5e-4                    # cut in half
-ENCODER_EPOCHS = 100                     # longer, but more stable
+ENCODER_LR     = 1e-3
+ENCODER_EPOCHS = 80
+ODE_LR         = 2e-4      # was 5e-4, reduce to dampen spikes
+ODE_EPOCHS     = 150       # a bit more room since LR is lower
+BATCH_SIZE     = 32
+PROBE_LR       = 1e-4
+PROBE_EPOCHS   = 100
+WINDOW_SIZE    = 25
+STRIDE         = 2
 
-ODE_LR         = 1e-4                    # major reduction (key change)
-ODE_EPOCHS     = 150                     # compensate with longer training
-
-BATCH_SIZE     = 64                      # reduce gradient noise
-
-PROBE_LR       = 2e-5                    # more conservative
-PROBE_EPOCHS   = 120
-
-WINDOW_SIZE = 20                         # slightly shorter horizon
-STRIDE      = 2
-
-CURRICULUM_WINDOWS  = [20]
-CURRICULUM_WEIGHTS  = [1.0]    # gradual increase in difficulty
+CURRICULUM_WINDOWS  = [10]
+CURRICULUM_WEIGHTS  = [1.0]
