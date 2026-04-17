@@ -10,6 +10,9 @@ cs = CubicSpline(t_known, y_known)
 t_smooth = np.linspace(0, 10, 300)
 y_smooth = cs(t_smooth)
 
+t_predict = 5.0
+y_predict = cs(t_predict)
+
 dot_style = dict(color='#2c3e50', s=100, zorder=5)
 legend_style = dict(fontsize=10, frameon=True, facecolor='white',
                     edgecolor='#cccccc', framealpha=1.0)
@@ -37,23 +40,34 @@ def add_rnn_and_dots(ax):
     ax.plot(t_known, y_known, color='#4A90D9', linewidth=2, zorder=3)
     return ax.scatter(t_known, y_known, **dot_style, label='Observations')
 
-def make_wiggle(rng, i):
+def add_predict_point(ax):
+    ax.scatter(t_predict, 3.0, color='#F5A623', s=120, zorder=7,
+               marker='D', label='Point to predict')
+    ax.axvline(t_predict, color='#F5A623', linewidth=0.8, linestyle=':', alpha=0.5, zorder=6)
+
+def add_predict_point_solved(ax):
+    ax.scatter(t_predict, y_predict, color='#F5A623', s=120, zorder=7,
+               marker='D', label='Point to predict')
+    ax.axvline(t_predict, color='#F5A623', linewidth=0.8, linestyle=':', alpha=0.5, zorder=6)
+
+def make_smooth_path(i, offset):
     t_seg = np.linspace(t_known[i], t_known[i+1], 40)
     y_start, y_end = y_known[i], y_known[i+1]
-    noise = rng.normal(0, 0.3, len(t_seg))
-    noise[0] = 0
-    noise[-1] = 0
-    taper = np.sin(np.linspace(0, np.pi, len(t_seg)))
-    y_alt = np.linspace(y_start, y_end, len(t_seg)) + noise * taper
-    return t_seg, y_alt
+    baseline = np.linspace(y_start, y_end, len(t_seg))
+    bump = offset * np.sin(np.linspace(0, np.pi, len(t_seg)))
+    return t_seg, baseline + bump
 
-# pre-generate all wiggly paths so they're consistent across frames
-rng = np.random.default_rng(7)
+offsets_per_path = [
+    [0.6, 0.5, 0.7, 0.5, 0.6, 0.5, 0.6],
+    [-0.6, -0.5, -0.7, -0.5, -0.6, -0.5, -0.6],
+    [0.7, -0.6, 0.5, -0.7, 0.6, -0.5, 0.7],
+]
+
 all_paths = []
-for path_idx in range(3):
+for offsets in offsets_per_path:
     path = []
     for i in range(len(t_known) - 1):
-        t_seg, y_alt = make_wiggle(rng, i)
+        t_seg, y_alt = make_smooth_path(i, offsets[i])
         path.append((t_seg, y_alt))
     all_paths.append(path)
 
@@ -61,9 +75,10 @@ def base_legend_handles(sc):
     rnn_line = plt.Line2D([0],[0], color='#4A90D9', linewidth=2, label='RNN path')
     shading_patch = plt.Rectangle((0,0), 1, 1, fc='#E84545', alpha=0.4, label='Undefined region')
     green_patch = plt.Rectangle((0,0), 1, 1, fc='#7ED321', alpha=0.5, label='Defined (observation)')
-    return [sc, rnn_line, shading_patch, green_patch]
+    predict_handle = plt.scatter([],[], color='#F5A623', s=120, marker='D', label='Point to predict')
+    return [sc, rnn_line, shading_patch, green_patch, predict_handle]
 
-# --- Frame 0: just points ---
+# --- Frame 0: just points, no prediction ---
 fig, ax = base_ax('Observations Over Time')
 sc = ax.scatter(t_known, y_known, **dot_style, label='Observations')
 ax.legend(handles=[sc], **legend_style)
@@ -72,56 +87,66 @@ plt.savefig('rnn_frame0.png', dpi=150, bbox_inches='tight', facecolor='white')
 plt.close()
 print('saved rnn_frame0.png')
 
-# --- Frame 1: RNN line ---
-fig, ax = base_ax('RNN: Discrete Timesteps')
-line, = ax.plot(t_known, y_known, color='#4A90D9', linewidth=2, zorder=3, label='RNN path')
+# --- Frame 1: points + prediction target ---
+fig, ax = base_ax('Can We Predict Between Observations?')
 sc = ax.scatter(t_known, y_known, **dot_style, label='Observations')
-ax.legend(handles=[sc, line], **legend_style)
+add_predict_point(ax)
+predict_handle = plt.scatter([],[], color='#F5A623', s=120, marker='D', label='Point to predict')
+ax.legend(handles=[sc, predict_handle], **legend_style)
 plt.tight_layout()
 plt.savefig('rnn_frame1.png', dpi=150, bbox_inches='tight', facecolor='white')
 plt.close()
 print('saved rnn_frame1.png')
 
-# --- Frame 2: shading + green bands ---
-fig, ax = base_ax('RNN: Gaps Between Timesteps')
-add_shading(ax)
-sc = add_rnn_and_dots(ax)
-ax.legend(handles=base_legend_handles(sc), **legend_style)
+# --- Frame 2: RNN line + prediction target ---
+fig, ax = base_ax('RNN: Discrete Timesteps')
+line, = ax.plot(t_known, y_known, color='#4A90D9', linewidth=2, zorder=3, label='RNN path')
+sc = ax.scatter(t_known, y_known, **dot_style, label='Observations')
+add_predict_point(ax)
+predict_handle = plt.scatter([],[], color='#F5A623', s=120, marker='D', label='Point to predict')
+ax.legend(handles=[sc, line, predict_handle], **legend_style)
 plt.tight_layout()
 plt.savefig('rnn_frame2.png', dpi=150, bbox_inches='tight', facecolor='white')
 plt.close()
 print('saved rnn_frame2.png')
 
-# --- Frames 3-5: one wiggle path added per frame ---
+# --- Frame 3: shading + green bands + prediction target ---
+fig, ax = base_ax('RNN: Gaps Between Timesteps')
+add_shading(ax)
+sc = add_rnn_and_dots(ax)
+add_predict_point(ax)
+ax.legend(handles=base_legend_handles(sc), **legend_style)
+plt.tight_layout()
+plt.savefig('rnn_frame3.png', dpi=150, bbox_inches='tight', facecolor='white')
+plt.close()
+print('saved rnn_frame3.png')
+
+# --- Frames 4-6: one smooth path per frame + prediction target ---
 for path_idx in range(3):
     fig, ax = base_ax(f'RNN: Possible Path {path_idx + 1}')
     add_shading(ax)
     sc = add_rnn_and_dots(ax)
-    for p in range(path_idx + 1):
-        for t_seg, y_alt in all_paths[p]:
-            ax.plot(t_seg, y_alt, color='#9B59B6', linewidth=1.5,
-                    alpha=0.8, zorder=4, linestyle='--')
-    alt_line = plt.Line2D([0],[0], color='#9B59B6', linewidth=1.5,
-                          linestyle='--', label='Possible path')
+    add_predict_point(ax)
+    for t_seg, y_alt in all_paths[path_idx]:
+        ax.plot(t_seg, y_alt, color='#9B59B6', linewidth=1.8,
+                alpha=0.85, zorder=4, linestyle='--')
+    alt_line = plt.Line2D([0],[0], color='#9B59B6', linewidth=1.8,
+                          linestyle='--', label=f'Possible path {path_idx + 1}')
     ax.legend(handles=base_legend_handles(sc) + [alt_line], **legend_style)
     plt.tight_layout()
-    plt.savefig(f'rnn_frame{path_idx + 3}.png', dpi=150, bbox_inches='tight', facecolor='white')
+    plt.savefig(f'rnn_frame{path_idx + 4}.png', dpi=150, bbox_inches='tight', facecolor='white')
     plt.close()
-    print(f'saved rnn_frame{path_idx + 3}.png')
+    print(f'saved rnn_frame{path_idx + 4}.png')
 
-# --- Frame 6: Neural ODE ---
+# --- Frame 7: Neural ODE + prediction solved ---
 fig, ax = base_ax('Neural ODE: Continuous Dynamics')
 line_ode, = ax.plot(t_smooth, y_smooth, color='#7ED321', linewidth=2.5,
                     zorder=3, label='Neural ODE trajectory')
 sc = ax.scatter(t_known, y_known, **dot_style, label='Observations')
-t_query = np.array([0.8, 2.2, 5.0, 8.3])
-y_query = cs(t_query)
-sc_q = ax.scatter(t_query, y_query, color='#E84545', s=80, zorder=6,
-                   marker='D', label='Query at any time')
-for tq in t_query:
-    ax.axvline(tq, color='#E84545', linewidth=0.8, linestyle=':', alpha=0.4)
-ax.legend(handles=[sc, line_ode, sc_q], **legend_style)
+add_predict_point_solved(ax)
+predict_handle = plt.scatter([],[], color='#F5A623', s=120, marker='D', label='Point to predict')
+ax.legend(handles=[sc, line_ode, predict_handle], **legend_style)
 plt.tight_layout()
-plt.savefig('rnn_frame6.png', dpi=150, bbox_inches='tight', facecolor='white')
+plt.savefig('rnn_frame7.png', dpi=150, bbox_inches='tight', facecolor='white')
 plt.close()
-print('saved rnn_frame6.png')
+print('saved rnn_frame7.png')
