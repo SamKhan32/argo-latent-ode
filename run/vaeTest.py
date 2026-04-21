@@ -67,9 +67,9 @@ def stage_encode(checkpoint_path=VAE_CHECKPOINT,
 
     # encoder interface is unchanged — still takes (profile, mask) -> mu
     # at eval time reparameterize() returns mu directly (no sampling)
-    latent_train = ArgoLatentDataset.from_encoder(train_ds, model.encoder, device, wmo_to_idx)
-    latent_val   = ArgoLatentDataset.from_encoder(val_ds,   model.encoder, device, wmo_to_idx)
-    latent_probe = ArgoLatentDataset.from_encoder(probe_ds, model.encoder, device, wmo_to_idx)
+    latent_train = ArgoLatentDataset.from_encoder(train_ds, model.encode_mu, device, wmo_to_idx)
+    latent_val   = ArgoLatentDataset.from_encoder(val_ds,   model.encode_mu, device, wmo_to_idx)
+    latent_probe = ArgoLatentDataset.from_encoder(probe_ds,  model.encode_mu, device, wmo_to_idx)
 
     print(f"Latent train: {len(latent_train)} casts")
     print(f"Latent val:   {len(latent_val)} casts")
@@ -104,7 +104,7 @@ def _load_probe_dataset(vae_checkpoint=VAE_CHECKPOINT):
     probe_ds = ArgoProbeDataset(df, split="probe", stats=train_ds.stats)
     model, _ = VAE.load(vae_checkpoint, device=device)
     print(f"Probe casts: {len(probe_ds)}")
-    return probe_ds, model.encoder, device
+    return probe_ds, model.encode_mu, device
 
 
 def stage_probe(

@@ -156,3 +156,6 @@ def vae_loss(recon, target, mask, mu, log_var, beta=1.0):
     kl_loss = -0.5 * torch.mean(1 + log_var - mu.pow(2) - log_var.exp())
 
     return recon_loss + beta * kl_loss, recon_loss, kl_loss
+def encode_mu(self, profile, mask):
+    mu, _ = self.encoder(profile, mask)
+    return mu
