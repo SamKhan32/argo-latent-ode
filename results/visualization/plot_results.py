@@ -9,7 +9,7 @@ Produces:
   01_encoder_training.png        - Encoder/decoder T/S training curves
   02_reconstruction_training.png - NODE vs GRU T/S training on one plot (+ depth-only hline)
   03_node_curriculum.png         - NODE curriculum training with phase shading
-  04_probe_training.png          - NODE probe vs GRU probe oxygen training on one plot
+  04_probe_training.png          - NODE probe vs GRU probe chlorophyll training on one plot
   05_extrapolation.png           - Extrapolation MSE vs horizon (NODE, GRU, depth-only)
   06_finetune_training.png       - Fine-tune training curves (total + component losses)
 """
@@ -31,7 +31,7 @@ COLORS = {
     "depth_only": "#6B7280",   # grey   – trivial baseline
     "train_ode":  "#93C5FD",   # light blue – NODE train
     "train_gru":  "#FCA5A5",   # light red  – GRU train
-    "oxy":        "#059669",   # teal   – oxygen
+    "oxy":        "#059669",   # teal   – chlorophyll
     "ts_raw":     "#7C3AED",   # purple – raw T/S
     "ts_evo":     "#D97706",   # amber  – evolved T/S
 }
@@ -155,7 +155,7 @@ def plot_probe_training():
     gru_p  = load("gru_probe_losses")
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
-    fig.suptitle("Oxygen Probe Training", fontsize=14, fontweight="bold")
+    fig.suptitle("Chlorophyll Probe Training", fontsize=14, fontweight="bold")
 
     for ax, df, label, vc, tc in [
         (axes[0], node_p, "Latent NODE Probe", COLORS["ode"], COLORS["train_ode"]),
@@ -239,7 +239,7 @@ def plot_finetune_training():
     for col, color, label in [
         ("val_ts_raw", COLORS["ts_raw"], "Val T/S (raw)"),
         ("val_ts_evo", COLORS["ts_evo"], "Val T/S (evolved)"),
-        ("val_oxy",    COLORS["oxy"],    "Val Oxygen"),
+        ("val_oxy",    COLORS["oxy"],    "Val Chlorophyll"),
     ]:
         ax.plot(epochs, df[col], color=color, label=label)
         annotate_best(ax, epochs, df[col], color)

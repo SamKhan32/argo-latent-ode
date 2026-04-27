@@ -101,7 +101,7 @@ for i, dev in enumerate(plot_devs):
             f"<b>Float {dev}</b><br>"
             "T strat: %{x:.2f} °C<br>"
             "S strat: %{y:.3f} PSU<br>"
-            "O mean:  %{z:.1f} μmol/kg<br>"
+            "Chl:     %{z:.3f} mg/m³<br>"
             "Time:    %{marker.color:.0f} days<br>"
             "<extra></extra>"
         ),
@@ -136,7 +136,7 @@ fig.update_layout(
     scene=dict(
         xaxis_title="Temperature Stratification (°C)",
         yaxis_title="Salinity Stratification (PSU)",
-        zaxis_title="Mean Oxygen (μmol/kg)",
+        zaxis_title="Mean Chlorophyll (mg/m³)",
     ),
     legend=dict(x=0.01, y=0.99),
     margin=dict(l=0, r=0, b=0, t=60),
