@@ -2,13 +2,18 @@ import numpy as np
 
 ## Data paths ##
 INTERP_PATH    = "data/processed/PFL1_interp72.csv"
-LOW_DRIFT_PATH = "data/processed/PFL1_low_drift_devices.csv"
+LOW_DRIFT_PATH = "data/processed/all_low_drift_target_devices.csv"
 
 ## Variables ##
 INPUT_VARS       = ['Temperature', 'Salinity', 'Oxygen']
 TARGET_VARS      = ['Chlorophyll']
 ALL_VARS         = ['Temperature', 'Salinity', 'Oxygen', 'Nitrate', 'pH', 'Chlorophyll']
 MIN_TARGET_PROBE = 4
+
+## PREPROCESS ##
+MAX_AVG_DRIFT_KM  = 50
+MIN_CASTS         = 5
+MIN_TARGET_CYCLES = 5  # basically the minumum 
 
 ## Data ##
 DEPTH_STRIDE = 1
