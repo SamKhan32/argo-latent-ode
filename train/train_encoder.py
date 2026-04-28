@@ -1,8 +1,8 @@
 """
-experiments/training/train_encoder.py
+train/train_encoder.py
 
-Stage 1 — encoder/decoder training on T/S reconstruction.
-Losses saved to results/encoder_losses.csv.
+Stage 1 — encoder/decoder training on T/S/O reconstruction.
+Checkpoint and losses saved to results_dir.
 """
 
 import os
@@ -28,15 +28,15 @@ def masked_mse(pred, target, mask):
     return (diff * mask).sum() / mask.sum().clamp(min=1)
 
 
-def train_encoder(
-    checkpoint_dir="checkpoints",
-    checkpoint_name="autoencoder_best.pt",
-    log_path="results/encoder_losses.csv",
-):
+def train_encoder(results_dir="results"):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)  # (73,)
+    os.makedirs(results_dir, exist_ok=True)
+    ckpt_path = os.path.join(results_dir, "autoencoder_best.pt")
+    log_path  = os.path.join(results_dir, "encoder_losses.csv")
+
+    depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
 
     df, _ = build_splits(LOW_DRIFT_PATH, INTERP_PATH)
 
@@ -53,8 +53,6 @@ def train_encoder(
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
 
     for epoch in range(1, ENCODER_EPOCHS + 1):
         t_start = time.time()
@@ -63,11 +61,11 @@ def train_encoder(
         train_loss = 0.0
 
         for batch in train_loader:
-            profile = batch["profile"].to(device)   # (B, D, n_vars)
-            mask    = batch["mask"].to(device)       # (B, D, n_vars)
+            profile = batch["profile"].to(device)
+            mask    = batch["mask"].to(device)
 
             recon, p = model(profile, mask, depth_tensor)
-            loss = masked_mse(recon, profile, mask) + 1e-3 * (p ** 2).mean()  # L2 regularization on p
+            loss = masked_mse(recon, profile, mask) + 1e-3 * (p ** 2).mean()
 
             optimizer.zero_grad()
             loss.backward()

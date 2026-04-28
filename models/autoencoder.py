@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from globals.config import INPUT_VARS, LATENT_DIM, ENCODER_HIDDEN, DECODER_HIDDEN
+from config import INPUT_VARS, LATENT_DIM, ENCODER_HIDDEN, DECODER_HIDDEN
 
 
 ## Encoder ##

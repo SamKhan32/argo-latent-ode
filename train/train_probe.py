@@ -1,8 +1,8 @@
 """
-experiments/training/train_probe.py
+train/train_probe.py
 
-Stage 3 — frozen encoder probe.
-Losses saved to results/probe_losses.csv.
+Stage 3 — frozen encoder + frozen ODE probe for TARGET_VARS.
+Checkpoint and losses saved to results_dir.
 """
 
 import os
@@ -16,19 +16,16 @@ from torchdiffeq import odeint
 from config import (
     LATENT_DIM, DEPTH_GRID,
     BATCH_SIZE, SEED,
-    DECODER_HIDDEN, PROBE_EPOCHS, PROBE_LR
+    DECODER_HIDDEN, PROBE_EPOCHS, PROBE_LR,
 )
 from models.probe_decoder import OxygenDecoderHead
 from utils.loss_logger import LossLogger
 
-
-WINDOW_SIZE  = 5
-STRIDE       = 2
-
-ODE_RTOL = 1e-3
-ODE_ATOL = 1e-4
-
-T_GRID = torch.tensor([0.0, 10.0, 20.0, 30.0, 40.0], dtype=torch.float32)
+WINDOW_SIZE = 5
+STRIDE      = 2
+ODE_RTOL    = 1e-3
+ODE_ATOL    = 1e-4
+T_GRID      = torch.tensor([0.0, 10.0, 20.0, 30.0, 40.0], dtype=torch.float32)
 
 torch.manual_seed(SEED)
 
@@ -85,13 +82,12 @@ def encode_profiles(encoder, profiles, mask, device):
 
 
 def compute_oxy_stats(probe_dataset):
-    """Compute oxygen normalization stats from the full probe dataset."""
     all_targets = []
     for i in range(len(probe_dataset)):
         t = probe_dataset[i]["target"]
         all_targets.append(t.flatten())
     all_targets = torch.cat(all_targets)
-    valid = all_targets[~torch.isnan(all_targets)]
+    valid    = all_targets[~torch.isnan(all_targets)]
     oxy_mean = valid.mean().item()
     oxy_std  = valid.std().item()
     oxy_std  = oxy_std if oxy_std > 1e-6 else 1.0
@@ -102,12 +98,14 @@ def train_probe(
     probe_dataset,
     encoder,
     ode_func,
-    checkpoint_dir="checkpoints",
-    checkpoint_name="probe_head_best.pt",
-    log_path="results/probe_losses.csv",
+    results_dir="results",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    os.makedirs(results_dir, exist_ok=True)
+    ckpt_path = os.path.join(results_dir, "probe_head_best.pt")
+    log_path  = os.path.join(results_dir, "probe_losses.csv")
 
     depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
     t_grid       = T_GRID.to(device)
@@ -120,10 +118,9 @@ def train_probe(
     encoder  = encoder.to(device)
     ode_func = ode_func.to(device)
 
-    # compute oxygen normalization stats before splitting
-    print("Computing oxygen normalization stats...")
+    print("Computing target normalization stats...")
     oxy_mean, oxy_std = compute_oxy_stats(probe_dataset)
-    print(f"Oxygen stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
+    print(f"Target stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
     oxy_mean_t = torch.tensor(oxy_mean, dtype=torch.float32, device=device)
     oxy_std_t  = torch.tensor(oxy_std,  dtype=torch.float32, device=device)
 
@@ -149,8 +146,6 @@ def train_probe(
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
 
     for epoch in range(1, PROBE_EPOCHS + 1):
         t_start = time.time()
@@ -166,11 +161,10 @@ def train_probe(
             lon     = batch["lon"].to(device)
 
             B, W, D, n_in = profile.shape
-
-            profile_flat = profile.reshape(B * W, D, n_in)
-            mask_flat    = mask.reshape(B * W, D, n_in)
-            p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-            p            = p_flat.reshape(B, W, LATENT_DIM)
+            profile_flat  = profile.reshape(B * W, D, n_in)
+            mask_flat     = mask.reshape(B * W, D, n_in)
+            p_flat        = encode_profiles(encoder, profile_flat, mask_flat, device)
+            p             = p_flat.reshape(B, W, LATENT_DIM)
 
             lat0 = lat[:, 0:1]
             lon0 = lon[:, 0:1]
@@ -206,11 +200,10 @@ def train_probe(
                 lon     = batch["lon"].to(device)
 
                 B, W, D, n_in = profile.shape
-
-                profile_flat = profile.reshape(B * W, D, n_in)
-                mask_flat    = mask.reshape(B * W, D, n_in)
-                p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-                p            = p_flat.reshape(B, W, LATENT_DIM)
+                profile_flat  = profile.reshape(B * W, D, n_in)
+                mask_flat     = mask.reshape(B * W, D, n_in)
+                p_flat        = encode_profiles(encoder, profile_flat, mask_flat, device)
+                p             = p_flat.reshape(B, W, LATENT_DIM)
 
                 lat0 = lat[:, 0:1]
                 lon0 = lon[:, 0:1]
@@ -228,7 +221,7 @@ def train_probe(
 
         val_loss /= len(val_loader)
 
-        elapsed = time.time() - t_start
+        elapsed    = time.time() - t_start
         current_lr = scheduler.get_last_lr()[0]
         print(f"Epoch {epoch:3d}/{PROBE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  lr={current_lr:.2e}  time={elapsed:.1f}s")
 

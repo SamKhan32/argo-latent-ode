@@ -1,14 +1,8 @@
 """
-experiments/training/train_vae.py
+train/train_vae.py
 
-Stage 1 (VAE variant) — encoder/decoder training on T/S reconstruction.
-Losses saved to results/vae_losses.csv.
-
-Differences from train_encoder.py:
-  - Uses VAE instead of Autoencoder
-  - forward() returns (recon, mu, log_var)
-  - Loss is vae_loss (masked MSE + beta-weighted KL) instead of masked MSE + L2
-  - Validation loss is reconstruction-only for a fair comparison with the autoencoder
+Stage 1 (VAE variant) — encoder/decoder training on T/S/O reconstruction.
+Checkpoint and losses saved to results_dir.
 """
 
 import os
@@ -27,19 +21,13 @@ from models.vae import VAE, vae_loss
 from utils.loss_logger import LossLogger
 
 
-def train_vae(
-    checkpoint_dir="checkpoints",
-    checkpoint_name="vae_best.pt",
-    log_path="results/vae_losses.csv",
-    beta=1.0,
-):
-    """
-    beta : KL weight in vae_loss.
-           1.0  = standard VAE
-           <1.0 = beta-VAE (more disentangled latent dims, slightly worse recon)
-    """
+def train_vae(results_dir="results", beta=1.0):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    os.makedirs(results_dir, exist_ok=True)
+    ckpt_path = os.path.join(results_dir, "vae_best.pt")
+    log_path  = os.path.join(results_dir, "vae_losses.csv")
 
     depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
 
@@ -58,21 +46,16 @@ def train_vae(
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
 
     for epoch in range(1, ENCODER_EPOCHS + 1):
         t_start = time.time()
 
-        # -- training --
         model.train()
-        train_loss = 0.0
-        train_recon_loss = 0.0
-        train_kl_loss    = 0.0
+        train_loss = train_recon = train_kl = 0.0
 
         for batch in train_loader:
-            profile = batch["profile"].to(device)   # (B, D, n_vars)
-            mask    = batch["mask"].to(device)       # (B, D, n_vars)
+            profile = batch["profile"].to(device)
+            mask    = batch["mask"].to(device)
 
             recon, mu, log_var = model(profile, mask, depth_tensor)
             loss, recon_l, kl_l = vae_loss(recon, profile, mask, mu, log_var, beta=beta)
@@ -81,17 +64,13 @@ def train_vae(
             loss.backward()
             optimizer.step()
 
-            train_loss       += loss.item()
-            train_recon_loss += recon_l.item()
-            train_kl_loss    += kl_l.item()
+            train_loss  += loss.item()
+            train_recon += recon_l.item()
+            train_kl    += kl_l.item()
 
-        train_loss       /= len(train_loader)
-        train_recon_loss /= len(train_loader)
-        train_kl_loss    /= len(train_loader)
+        n = len(train_loader)
+        train_loss /= n; train_recon /= n; train_kl /= n
 
-        # -- validation --
-        # use reconstruction loss only so this number is comparable to the
-        # autoencoder's val loss when you plot them side by side
         model.eval()
         val_loss = 0.0
 
@@ -109,7 +88,7 @@ def train_vae(
         elapsed = time.time() - t_start
         print(
             f"Epoch {epoch:3d}/{ENCODER_EPOCHS}  "
-            f"train={train_loss:.4f} (recon={train_recon_loss:.4f} kl={train_kl_loss:.4f})  "
+            f"train={train_loss:.4f} (recon={train_recon:.4f} kl={train_kl:.4f})  "
             f"val_recon={val_loss:.4f}  time={elapsed:.1f}s"
         )
 

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from globals.config import LATENT_DIM, ODE_HIDDEN
+from config import LATENT_DIM, ODE_HIDDEN
 
 
 class GRUDynamics(nn.Module):

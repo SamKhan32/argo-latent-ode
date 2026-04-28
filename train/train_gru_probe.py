@@ -1,25 +1,24 @@
 """
-experiments/training/train_gru_probe.py
+train/train_gru_probe.py
 
-Stage: GRU probe — frozen encoder + frozen GRU dynamics, train oxygen decoder head.
-
+Stage: GRU probe — frozen encoder + frozen GRU, train target variable decoder.
 Direct parallel to train_probe.py but using GRUDynamics instead of ODEFunc.
-Losses saved to results/gru_probe_losses.csv.
+
+Checkpoint and losses saved to results_dir.
 """
 
 import os
 import time
 import torch
-from collections import defaultdict
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 from config import (
     LATENT_DIM, DEPTH_GRID,
-    BATCH_SIZE, SEED, DECODER_HIDDEN, ODE_HIDDEN,
+    BATCH_SIZE, SEED, DECODER_HIDDEN,
 )
 from models.gru import GRUDynamics
 from models.probe_decoder import OxygenDecoderHead
-from train.train_probe import (
+from train_probe import (
     SlidingWindowProbeDataset,
     masked_mse,
     encode_profiles,
@@ -38,12 +37,14 @@ def train_gru_probe(
     probe_dataset,
     encoder,
     gru,
-    checkpoint_dir="checkpoints",
-    checkpoint_name="gru_probe_best.pt",
-    log_path="results/gru_probe_losses.csv",
+    results_dir="results",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    os.makedirs(results_dir, exist_ok=True)
+    ckpt_path = os.path.join(results_dir, "gru_probe_best.pt")
+    log_path  = os.path.join(results_dir, "gru_probe_losses.csv")
 
     depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
 
@@ -55,10 +56,9 @@ def train_gru_probe(
     encoder = encoder.to(device)
     gru     = gru.to(device)
 
-    # compute oxygen normalization stats before splitting
-    print("Computing oxygen normalization stats...")
+    print("Computing target normalization stats...")
     oxy_mean, oxy_std = compute_oxy_stats(probe_dataset)
-    print(f"Oxygen stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
+    print(f"Target stats — mean: {oxy_mean:.2f}, std: {oxy_std:.2f}")
     oxy_mean_t = torch.tensor(oxy_mean, dtype=torch.float32, device=device)
     oxy_std_t  = torch.tensor(oxy_std,  dtype=torch.float32, device=device)
 
@@ -81,10 +81,7 @@ def train_gru_probe(
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
-
-    n_steps = WINDOW_SIZE - 1
+    n_steps       = WINDOW_SIZE - 1
 
     for epoch in range(1, PROBE_EPOCHS + 1):
         t_start = time.time()
@@ -100,16 +97,13 @@ def train_gru_probe(
             lon     = batch["lon"].to(device)
 
             B, W, D, n_in = profile.shape
-
-            profile_flat = profile.reshape(B * W, D, n_in)
-            mask_flat    = mask.reshape(B * W, D, n_in)
-            p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-            p0           = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
+            profile_flat  = profile.reshape(B * W, D, n_in)
+            mask_flat     = mask.reshape(B * W, D, n_in)
+            p_flat        = encode_profiles(encoder, profile_flat, mask_flat, device)
+            p0            = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
 
             p_traj      = gru(p0, lat[:, 0], lon[:, 0], n_steps)
-            p_pred      = p_traj.permute(1, 0, 2)
-            p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
-
+            p_pred_flat = p_traj.permute(1, 0, 2).reshape(B * W, LATENT_DIM)
             target_flat = target.reshape(B * W, D, target.shape[-1])
             target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
@@ -136,16 +130,13 @@ def train_gru_probe(
                 lon     = batch["lon"].to(device)
 
                 B, W, D, n_in = profile.shape
-
-                profile_flat = profile.reshape(B * W, D, n_in)
-                mask_flat    = mask.reshape(B * W, D, n_in)
-                p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-                p0           = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
+                profile_flat  = profile.reshape(B * W, D, n_in)
+                mask_flat     = mask.reshape(B * W, D, n_in)
+                p_flat        = encode_profiles(encoder, profile_flat, mask_flat, device)
+                p0            = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
 
                 p_traj      = gru(p0, lat[:, 0], lon[:, 0], n_steps)
-                p_pred      = p_traj.permute(1, 0, 2)
-                p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
-
+                p_pred_flat = p_traj.permute(1, 0, 2).reshape(B * W, LATENT_DIM)
                 target_flat = target.reshape(B * W, D, target.shape[-1])
                 target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 

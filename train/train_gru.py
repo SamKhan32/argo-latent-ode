@@ -1,18 +1,10 @@
 """
-experiments/training/train_gru.py
+train/train_gru.py
 
 GRU dynamics baseline — discrete-time alternative to the Neural ODE.
+Same setup as train_node.py; only the dynamics model changes.
 
-Same setup as train_node.py:
-  - same frozen encoder
-  - same SlidingWindowDataset
-  - same latent_cycles.pt
-  - same loss (MSE on latent trajectory)
-
-Only the dynamics model changes: ODEFunc -> GRUDynamics.
-This isolates the contribution of continuous-time modelling.
-
-Losses saved to results/gru_losses.csv.
+Checkpoint and losses saved to results_dir.
 """
 
 import os
@@ -24,18 +16,20 @@ from torch.utils.data import DataLoader
 from config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, ODE_HIDDEN, WINDOW_SIZE, STRIDE
 from utils.datasets import ArgoLatentDataset
 from models.gru import GRUDynamics
-from train.train_node import SlidingWindowDataset   # reuse exactly
+from train_node import SlidingWindowDataset
 from utils.loss_logger import LossLogger
 
 
 def train_gru(
-    latent_path="checkpoints/latent_cycles.pt",
-    checkpoint_dir="checkpoints",
-    checkpoint_name="gru_best.pt",
-    log_path="results/gru_losses.csv",
+    latent_path="results/latent_cycles.pt",
+    results_dir="results",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    os.makedirs(results_dir, exist_ok=True)
+    ckpt_path = os.path.join(results_dir, "gru_best.pt")
+    log_path  = os.path.join(results_dir, "gru_losses.csv")
 
     print(f"Loading latent cycles from {latent_path}")
     ckpt = torch.load(latent_path, map_location="cpu", weights_only=False)
@@ -60,28 +54,22 @@ def train_gru(
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
-
-    n_steps = WINDOW_SIZE - 1   # 4 steps for a window of 5
+    n_steps       = WINDOW_SIZE - 1
 
     for epoch in range(1, ODE_EPOCHS + 1):
         t_start = time.time()
 
-        # ── train ──
         model.train()
         train_loss = 0.0
 
         for batch in train_loader:
-            p   = batch["p"].to(device)     # (B, W, latent_dim)
-            lat = batch["lat"].to(device)   # (B, W)
-            lon = batch["lon"].to(device)   # (B, W)
+            p   = batch["p"].to(device)
+            lat = batch["lat"].to(device)
+            lon = batch["lon"].to(device)
 
-            # use first time step lat/lon as conditioning — mirrors NODE
-            p_traj = model(p[:, 0, :], lat[:, 0], lon[:, 0], n_steps)  # (W, B, latent_dim)
-            p_pred = p_traj.permute(1, 0, 2)                            # (B, W, latent_dim)
-
-            loss = loss_fn(p_pred, p)
+            p_traj = model(p[:, 0, :], lat[:, 0], lon[:, 0], n_steps)
+            p_pred = p_traj.permute(1, 0, 2)
+            loss   = loss_fn(p_pred, p)
 
             optimizer.zero_grad()
             loss.backward()
@@ -91,7 +79,6 @@ def train_gru(
 
         train_loss /= len(train_loader)
 
-        # ── validate ──
         model.eval()
         val_loss = 0.0
 

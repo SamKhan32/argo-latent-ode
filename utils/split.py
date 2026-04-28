@@ -30,10 +30,10 @@ def get_float_level_metadata(low_drift_df, pfl_df):
     )
 
     target_cols = [v for v in TARGET_VARS if v in pfl_df.columns]
-    o2_wmo_ids  = set(
+    target_wmo_ids = set(
         pfl_df[pfl_df[target_cols].notna().any(axis=1)]["WMO_ID"].unique()
     )
-    float_meta["has_o2"] = float_meta["WMO_ID"].isin(o2_wmo_ids)
+    float_meta["has_target"] = float_meta["WMO_ID"].isin(target_wmo_ids)
 
     return float_meta
 
@@ -47,7 +47,7 @@ def stratified_float_split(float_meta, train_frac=TRAIN_FRAC, test_frac=TEST_FRA
     rng = np.random.default_rng(seed)
     split_map = {"train": [], "test": [], "probe": []}
 
-    target_floats = float_meta[float_meta["has_o2"]].copy()
+    target_floats = float_meta[float_meta["has_target"]].copy()
 
     reserved_probe = []
     if len(target_floats) >= MIN_TARGET_PROBE:
@@ -106,10 +106,10 @@ def verify_split(pfl_filtered, float_meta, split_map):
 
     print("\nFloat counts by split:")
     for split_name, wmo_ids in split_map.items():
-        o2_count = float_meta[
-            float_meta["WMO_ID"].isin(wmo_ids) & float_meta["has_o2"]
+        target_count = float_meta[
+            float_meta["WMO_ID"].isin(wmo_ids) & float_meta["has_target"]
         ].shape[0]
-        print(f"  {split_name:6s}: {len(wmo_ids):3d} floats  ({o2_count} with O2)")
+        print(f"  {split_name:6s}: {len(wmo_ids):3d} floats  ({target_count} with target)")
 
     print("\nRow counts by split:")
     print(pfl_filtered["split"].value_counts())
@@ -138,7 +138,7 @@ def build_splits(low_drift_path=LOW_DRIFT_PATH, interp_path=INTERP_PATH):
 
     print("\nRegion distribution:")
     print(float_meta["region"].value_counts())
-    print(f"\nO2 floats: {float_meta['has_o2'].sum()} / {len(float_meta)}")
+    print(f"\nTarget floats: {float_meta['has_target'].sum()} / {len(float_meta)}")
 
     split_map = stratified_float_split(float_meta)
 

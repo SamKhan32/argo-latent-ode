@@ -1,8 +1,8 @@
 """
-experiments/training/train_node.py
+train/train_node.py
 
 Stage 2 — Neural ODE training on latent trajectories.
-Losses saved to results/node_losses.csv.
+Checkpoint and losses saved to results_dir.
 """
 
 import os
@@ -17,6 +17,7 @@ from utils.datasets import ArgoLatentDataset
 from models.ode import ODEFunc
 from utils.loss_logger import LossLogger
 
+from collections import defaultdict
 
 ODE_RTOL = 1e-4
 ODE_ATOL = 1e-5
@@ -31,7 +32,6 @@ class SlidingWindowDataset(Dataset):
         self.window_size = window_size
         self.windows     = []
 
-        from collections import defaultdict
         device_records = defaultdict(list)
         for r in self.records:
             device_records[r["device_idx"]].append(r)
@@ -57,13 +57,15 @@ class SlidingWindowDataset(Dataset):
 
 
 def train_ode(
-    latent_path="checkpoints/latent_cycles.pt",
-    checkpoint_dir="checkpoints",
-    checkpoint_name="ode_best.pt",
-    log_path="results/node_losses.csv",
+    latent_path="results/latent_cycles.pt",
+    results_dir="results",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    os.makedirs(results_dir, exist_ok=True)
+    ckpt_path = os.path.join(results_dir, "ode_best.pt")
+    log_path  = os.path.join(results_dir, "node_losses.csv")
 
     t_grid = T_GRID.to(device)
 
@@ -89,12 +91,10 @@ def train_ode(
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, T_max=ODE_EPOCHS, eta_min=1e-6
     )
-    loss_fn   = nn.MSELoss()
+    loss_fn = nn.MSELoss()
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
 
     for epoch in range(1, ODE_EPOCHS + 1):
         t_start = time.time()
@@ -113,7 +113,6 @@ def train_ode(
 
             z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
                             rtol=ODE_RTOL, atol=ODE_ATOL)
-
             p_pred = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
             loss   = loss_fn(p_pred, p)
 
@@ -140,7 +139,6 @@ def train_ode(
 
                 z_pred = odeint(ode_func, z0, t_grid, method="dopri5",
                                 rtol=ODE_RTOL, atol=ODE_ATOL)
-
                 p_pred    = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
                 val_loss += loss_fn(p_pred, p).item()
 
