@@ -35,7 +35,7 @@ from config import (
     STRIDE, CURRICULUM_WINDOWS, CURRICULUM_WEIGHTS, ODE_METHOD
 )
 from data.datasets import ArgoLatentDataset
-from models.architectures.ode import ODEFunc
+from models.ode import ODEFunc
 from utils.loss_logger import LossLogger
 
 ODE_RTOL = 1e-4

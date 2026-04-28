@@ -36,9 +36,9 @@ from config import (
     LAMBDA_ODE, LAMBDA_OXY,
 )
 from data.datasets import ArgoJointWindowDataset
-from models.architectures.autoencoder import Autoencoder
-from models.architectures.ode import ODEFunc
-from models.architectures.probe_decoder import OxygenDecoderHead
+from models.autoencoder import Autoencoder
+from models.ode import ODEFunc
+from models.probe_decoder import OxygenDecoderHead
 from utils.loss_logger import LossLogger
 
 WINDOW_SIZE = 5

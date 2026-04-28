@@ -7,18 +7,18 @@ from config import (
 )
 from data.split import build_splits
 from data.datasets import ArgoProfileDataset, ArgoLatentDataset, ArgoProbeDataset
-from models.architectures.autoencoder import Autoencoder
-from models.architectures.ode import ODEFunc
-from models.architectures.gru import GRUDynamics
-from experiments.training.train_encoder import train_encoder
-from experiments.training.train_node import train_ode
-from experiments.training.train_probe import train_probe
-from experiments.training.train_probe_baseline import train_probe_baseline
-from experiments.training.train_gru import train_gru
-from experiments.training.train_gru_probe import train_gru_probe
-from experiments.evaluation.extrapolation import run_extrapolation
-from experiments.training.train_finetune import train_finetune
-from experiments.training.train_node_curriculum import train_ode_curriculum
+from models.autoencoder import Autoencoder
+from models.ode import ODEFunc
+from models.gru import GRUDynamics
+from train.train_encoder import train_encoder
+from train.train_node import train_ode
+from train.train_probe import train_probe
+from train.train_probe_baseline import train_probe_baseline
+from train.train_gru import train_gru
+from train.train_gru_probe import train_gru_probe
+from extrapolation import run_extrapolation
+from train.train_finetune import train_finetune
+from train.train_node_curriculum import train_ode_curriculum
 from utils.seeding import set_seed
 from data.split import build_splits
 from data.datasets import ArgoProbeDataset

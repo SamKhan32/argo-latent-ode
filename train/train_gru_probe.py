@@ -1,124 +1,59 @@
 """
-experiments/training/train_probe.py
+experiments/training/train_gru_probe.py
 
-Stage 3 — frozen encoder probe.
-Losses saved to results/probe_losses.csv.
+Stage: GRU probe — frozen encoder + frozen GRU dynamics, train oxygen decoder head.
+
+Direct parallel to train_probe.py but using GRUDynamics instead of ODEFunc.
+Losses saved to results/gru_probe_losses.csv.
 """
 
 import os
 import time
 import torch
-import torch.nn as nn
 from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
-from torchdiffeq import odeint
 
 from config import (
     LATENT_DIM, DEPTH_GRID,
-    BATCH_SIZE, SEED,
-    DECODER_HIDDEN, PROBE_EPOCHS, PROBE_LR
+    BATCH_SIZE, SEED, DECODER_HIDDEN, ODE_HIDDEN,
 )
-from models.architectures.probe_decoder import OxygenDecoderHead
+from models.gru import GRUDynamics
+from models.probe_decoder import OxygenDecoderHead
+from train.train_probe import (
+    SlidingWindowProbeDataset,
+    masked_mse,
+    encode_profiles,
+    compute_oxy_stats,
+)
 from utils.loss_logger import LossLogger
 
-
+PROBE_LR     = 1e-3
+PROBE_EPOCHS = 100
 WINDOW_SIZE  = 5
-STRIDE       = 2
-
-ODE_RTOL = 1e-3
-ODE_ATOL = 1e-4
-
-T_GRID = torch.tensor([0.0, 10.0, 20.0, 30.0, 40.0], dtype=torch.float32)
 
 torch.manual_seed(SEED)
 
 
-class SlidingWindowProbeDataset(Dataset):
-
-    def __init__(self, probe_dataset, window_size=WINDOW_SIZE, stride=STRIDE):
-        self.probe_dataset = probe_dataset
-        self.window_size   = window_size
-        self.windows       = []
-
-        device_indices = defaultdict(list)
-        for i in range(len(probe_dataset)):
-            item = probe_dataset[i]
-            device_indices[item["wmo_id"]].append((item["t"].item(), i))
-
-        for wmo_id, t_idx_pairs in device_indices.items():
-            t_idx_pairs = sorted(t_idx_pairs, key=lambda x: x[0])
-            indices = [idx for _, idx in t_idx_pairs]
-            times   = [t   for t,  _  in t_idx_pairs]
-
-            n = len(indices)
-            for start in range(0, n - window_size + 1, stride):
-                window_idx = indices[start : start + window_size]
-                window_t   = times[start : start + window_size]
-                if all(window_t[i] < window_t[i+1] for i in range(len(window_t)-1)):
-                    self.windows.append(window_idx)
-
-    def __len__(self):
-        return len(self.windows)
-
-    def __getitem__(self, idx):
-        indices = self.windows[idx]
-        items   = [self.probe_dataset[i] for i in indices]
-        return {
-            "profile": torch.stack([it["profile"] for it in items]),
-            "mask":    torch.stack([it["mask"]    for it in items]),
-            "target":  torch.stack([it["target"]  for it in items]),
-            "lat":     torch.stack([it["lat"]     for it in items]),
-            "lon":     torch.stack([it["lon"]     for it in items]),
-        }
-
-
-def masked_mse(pred, target):
-    mask = ~torch.isnan(target)
-    if mask.sum() == 0:
-        return torch.tensor(0.0, requires_grad=True, device=pred.device)
-    return ((pred - target)[mask] ** 2).mean()
-
-
-def encode_profiles(encoder, profiles, mask, device):
-    with torch.no_grad():
-        return encoder(profiles.to(device), mask.to(device))
-
-
-def compute_oxy_stats(probe_dataset):
-    """Compute oxygen normalization stats from the full probe dataset."""
-    all_targets = []
-    for i in range(len(probe_dataset)):
-        t = probe_dataset[i]["target"]
-        all_targets.append(t.flatten())
-    all_targets = torch.cat(all_targets)
-    valid = all_targets[~torch.isnan(all_targets)]
-    oxy_mean = valid.mean().item()
-    oxy_std  = valid.std().item()
-    oxy_std  = oxy_std if oxy_std > 1e-6 else 1.0
-    return oxy_mean, oxy_std
-
-
-def train_probe(
+def train_gru_probe(
     probe_dataset,
     encoder,
-    ode_func,
+    gru,
     checkpoint_dir="checkpoints",
-    checkpoint_name="probe_head_best.pt",
-    log_path="results/probe_losses.csv",
+    checkpoint_name="gru_probe_best.pt",
+    log_path="results/gru_probe_losses.csv",
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     depth_tensor = torch.tensor(DEPTH_GRID, dtype=torch.float32).to(device)
-    t_grid       = T_GRID.to(device)
 
-    for model in (encoder, ode_func):
+    for model in (encoder, gru):
         model.eval()
         for param in model.parameters():
             param.requires_grad_(False)
 
-    encoder  = encoder.to(device)
-    ode_func = ode_func.to(device)
+    encoder = encoder.to(device)
+    gru     = gru.to(device)
 
     # compute oxygen normalization stats before splitting
     print("Computing oxygen normalization stats...")
@@ -128,7 +63,7 @@ def train_probe(
     oxy_std_t  = torch.tensor(oxy_std,  dtype=torch.float32, device=device)
 
     print("Building probe windows...")
-    window_ds = SlidingWindowProbeDataset(probe_dataset, WINDOW_SIZE, STRIDE)
+    window_ds = SlidingWindowProbeDataset(probe_dataset, WINDOW_SIZE)
     print(f"Probe windows: {len(window_ds)}")
 
     n_val   = max(1, int(0.2 * len(window_ds)))
@@ -143,14 +78,13 @@ def train_probe(
 
     probe_head = OxygenDecoderHead(latent_dim=LATENT_DIM, hidden=DECODER_HIDDEN).to(device)
     optimizer  = torch.optim.Adam(probe_head.parameters(), lr=PROBE_LR)
-    scheduler  = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=PROBE_EPOCHS, eta_min=1e-6
-    )
 
     logger        = LossLogger(log_path)
     best_val_loss = float("inf")
     os.makedirs(checkpoint_dir, exist_ok=True)
     ckpt_path = os.path.join(checkpoint_dir, checkpoint_name)
+
+    n_steps = WINDOW_SIZE - 1
 
     for epoch in range(1, PROBE_EPOCHS + 1):
         t_start = time.time()
@@ -170,16 +104,12 @@ def train_probe(
             profile_flat = profile.reshape(B * W, D, n_in)
             mask_flat    = mask.reshape(B * W, D, n_in)
             p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-            p            = p_flat.reshape(B, W, LATENT_DIM)
+            p0           = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
 
-            lat0 = lat[:, 0:1]
-            lon0 = lon[:, 0:1]
-            z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
-
-            z_pred      = odeint(ode_func, z0, t_grid, method="dopri5",
-                                 rtol=ODE_RTOL, atol=ODE_ATOL)
-            p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
+            p_traj      = gru(p0, lat[:, 0], lon[:, 0], n_steps)
+            p_pred      = p_traj.permute(1, 0, 2)
             p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
+
             target_flat = target.reshape(B * W, D, target.shape[-1])
             target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
@@ -210,16 +140,12 @@ def train_probe(
                 profile_flat = profile.reshape(B * W, D, n_in)
                 mask_flat    = mask.reshape(B * W, D, n_in)
                 p_flat       = encode_profiles(encoder, profile_flat, mask_flat, device)
-                p            = p_flat.reshape(B, W, LATENT_DIM)
+                p0           = p_flat.reshape(B, W, LATENT_DIM)[:, 0, :]
 
-                lat0 = lat[:, 0:1]
-                lon0 = lon[:, 0:1]
-                z0   = torch.cat([p[:, 0, :], lat0, lon0], dim=-1)
-
-                z_pred      = odeint(ode_func, z0, t_grid, method="dopri5",
-                                     rtol=ODE_RTOL, atol=ODE_ATOL)
-                p_pred      = z_pred[:, :, :LATENT_DIM].permute(1, 0, 2)
+                p_traj      = gru(p0, lat[:, 0], lon[:, 0], n_steps)
+                p_pred      = p_traj.permute(1, 0, 2)
                 p_pred_flat = p_pred.reshape(B * W, LATENT_DIM)
+
                 target_flat = target.reshape(B * W, D, target.shape[-1])
                 target_norm = (target_flat - oxy_mean_t) / oxy_std_t
 
@@ -229,8 +155,7 @@ def train_probe(
         val_loss /= len(val_loader)
 
         elapsed = time.time() - t_start
-        current_lr = scheduler.get_last_lr()[0]
-        print(f"Epoch {epoch:3d}/{PROBE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  lr={current_lr:.2e}  time={elapsed:.1f}s")
+        print(f"Epoch {epoch:3d}/{PROBE_EPOCHS}  train={train_loss:.4f}  val={val_loss:.4f}  time={elapsed:.1f}s")
 
         logger.log(epoch, train_loss, val_loss)
 
@@ -243,8 +168,6 @@ def train_probe(
             }, ckpt_path)
             print(f"  -> saved checkpoint (val={best_val_loss:.4f})")
 
-        scheduler.step()
-
-    print(f"\nProbe training complete. Best val loss: {best_val_loss:.4f}")
+    print(f"\nGRU probe training complete. Best val loss: {best_val_loss:.4f}")
     print(f"Losses saved to: {log_path}")
     return ckpt_path

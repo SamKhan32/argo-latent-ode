@@ -23,7 +23,7 @@ from config import (
 )
 from data.split import build_splits
 from data.datasets import ArgoProfileDataset
-from models.architectures.vae import VAE, vae_loss
+from models.vae import VAE, vae_loss
 from utils.loss_logger import LossLogger
 
 

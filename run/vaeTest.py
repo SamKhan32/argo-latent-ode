@@ -7,17 +7,17 @@ from config import (
 )
 from data.split import build_splits
 from data.datasets import ArgoProfileDataset, ArgoLatentDataset, ArgoProbeDataset
-from models.architectures.vae import VAE                        # <-- VAE
-from models.architectures.ode import ODEFunc
-from models.architectures.gru import GRUDynamics
-from experiments.training.train_vae import train_vae            # <-- needs to be written
-from experiments.training.train_node import train_ode
-from experiments.training.train_probe import train_probe
-from experiments.training.train_probe_baseline import train_probe_baseline
-from experiments.training.train_gru import train_gru
-from experiments.training.train_gru_probe import train_gru_probe
-from experiments.evaluation.extrapolation import run_extrapolation
-from experiments.training.train_node_curriculum import train_ode_curriculum
+from models.vae import VAE                        # <-- VAE
+from models.ode import ODEFunc
+from models.gru import GRUDynamics
+from train.train_vae import train_vae            # <-- needs to be written
+from train.train_node import train_ode
+from train.train_probe import train_probe
+from train.train_probe_baseline import train_probe_baseline
+from train.train_gru import train_gru
+from train.train_gru_probe import train_gru_probe
+from extrapolation import run_extrapolation
+from train.train_node_curriculum import train_ode_curriculum
 from utils.seeding import set_seed
 
 ## checkpoint paths — separate from autoencoder so nothing gets overwritten

@@ -25,7 +25,7 @@ from torchdiffeq import odeint
 
 from config import LATENT_DIM, ODE_HIDDEN, BATCH_SIZE
 from data.datasets import ArgoLatentDataset
-from experiments.training.train_node import SlidingWindowDataset
+from train.train_node import SlidingWindowDataset
 from globals.baseline_registry import BASELINES, DEPTH_ONLY_VAL_LOSS
 from torch.utils.data import DataLoader
 

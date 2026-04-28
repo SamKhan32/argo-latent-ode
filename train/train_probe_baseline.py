@@ -23,7 +23,7 @@ from config import (
     LATENT_DIM, DEPTH_GRID, DECODER_HIDDEN,
     BATCH_SIZE, SEED, TARGET_VARS,
 )
-from experiments.training.train_probe import (
+from train.train_probe import (
     SlidingWindowProbeDataset,
     masked_mse,
     compute_oxy_stats,
