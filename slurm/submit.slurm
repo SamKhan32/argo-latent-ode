@@ -31,7 +31,7 @@ export PYTHONPATH=$SLURM_SUBMIT_DIR${PYTHONPATH:+:$PYTHONPATH}
 
 python -u run/main.py --stage all --results_dir $RUN_DIR
 python -u run/main.py --stage extrapolation --results_dir $RUN_DIR
-
+python -u plot_results.py --results_dir $RUN_DIR
 echo "======================================================"
 echo "End Time : $(date)"
 echo "======================================================"
