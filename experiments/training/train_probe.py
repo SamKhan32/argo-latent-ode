@@ -13,7 +13,7 @@ from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
 from torchdiffeq import odeint
 
-from globals.config import (
+from config import (
     LATENT_DIM, DEPTH_GRID,
     BATCH_SIZE, SEED,
     DECODER_HIDDEN, PROBE_EPOCHS, PROBE_LR

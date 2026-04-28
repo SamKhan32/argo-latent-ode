@@ -29,7 +29,7 @@ import torch
 from torch.utils.data import DataLoader
 from torchdiffeq import odeint
 
-from globals.config import (
+from config import (
     LATENT_DIM, DEPTH_GRID, BATCH_SIZE, SEED,
     DECODER_HIDDEN, ODE_HIDDEN,
     PROBE_LR, PROBE_EPOCHS,

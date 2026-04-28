@@ -30,7 +30,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torchdiffeq import odeint
 
-from globals.config import (
+from config import (
     ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM,
     STRIDE, CURRICULUM_WINDOWS, CURRICULUM_WEIGHTS, ODE_METHOD
 )

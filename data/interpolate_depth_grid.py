@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 from scipy.interpolate import interp1d
 
-from globals.config import (
+from config import (
     DEPTH_GRID,
     ALL_VARS,
 )

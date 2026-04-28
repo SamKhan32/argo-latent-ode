@@ -1,7 +1,7 @@
 import argparse
 import torch
 
-from globals.config import (
+from config import (
     LOW_DRIFT_PATH, INTERP_PATH,
     LATENT_DIM, ENCODER_HIDDEN, DECODER_HIDDEN, ODE_HIDDEN,
 )

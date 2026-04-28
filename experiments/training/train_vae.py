@@ -16,7 +16,7 @@ import time
 import torch
 from torch.utils.data import DataLoader
 
-from globals.config import (
+from config import (
     LOW_DRIFT_PATH, INTERP_PATH, DEPTH_GRID,
     ENCODER_LR, ENCODER_EPOCHS, BATCH_SIZE, LATENT_DIM,
     ENCODER_HIDDEN, DECODER_HIDDEN,
