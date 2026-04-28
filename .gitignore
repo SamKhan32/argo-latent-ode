@@ -1,8 +1,10 @@
-# data
+# data 
 data/original/*
 data/processed/*
+!data/original/.gitkeep
+!data/processed/.gitkeep
 
-# results — generated outputs, never commit these
+# results — generated outputs
 results/
 
 # python
@@ -10,7 +12,7 @@ __pycache__/
 *.pyc
 *.pyo
 
-# checkpoints — large binary files, belong in results/ anyway now
+# checkpoints — large binary files
 *.pt
 *.pth
 
