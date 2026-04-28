@@ -18,7 +18,7 @@ from config import (
     DEPTH_GRID, DECODER_HIDDEN,
     BATCH_SIZE, SEED, TARGET_VARS,
 )
-from train_probe import (
+from train.train_probe import (
     SlidingWindowProbeDataset,
     masked_mse,
     compute_oxy_stats,

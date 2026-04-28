@@ -18,7 +18,7 @@ from config import (
 )
 from models.gru import GRUDynamics
 from models.probe_decoder import OxygenDecoderHead
-from train_probe import (
+from train.train_probe import (
     SlidingWindowProbeDataset,
     masked_mse,
     encode_profiles,

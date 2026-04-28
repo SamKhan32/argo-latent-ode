@@ -23,7 +23,7 @@ from config import (
 )
 from utils.datasets import ArgoLatentDataset
 from models.ode import ODEFunc
-from train_node import SlidingWindowDataset
+from train.train_node import SlidingWindowDataset
 from utils.loss_logger import LossLogger
 
 ODE_RTOL = 1e-4

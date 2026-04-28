@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 from config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, ODE_HIDDEN, WINDOW_SIZE, STRIDE
 from utils.datasets import ArgoLatentDataset
 from models.gru import GRUDynamics
-from train_node import SlidingWindowDataset
+from train.train_node import SlidingWindowDataset
 from utils.loss_logger import LossLogger
 
 
