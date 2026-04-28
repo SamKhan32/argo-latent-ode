@@ -1,7 +1,19 @@
+# data
 data/original/*
 data/processed/*
-close_cast_pairs.csv
-__pycache__
+
+# results — generated outputs, never commit these
+results/
+
+# python
 __pycache__/
 *.pyc
-__pycache__
+*.pyo
+
+# checkpoints — large binary files, belong in results/ anyway now
+*.pt
+*.pth
+
+# editor/OS
+.vscode/
+.DS_Store
