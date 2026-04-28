@@ -21,8 +21,8 @@ from config import (
     ENCODER_LR, ENCODER_EPOCHS, BATCH_SIZE, LATENT_DIM,
     ENCODER_HIDDEN, DECODER_HIDDEN,
 )
-from data.split import build_splits
-from data.datasets import ArgoProfileDataset
+from utils.split import build_splits
+from utils.datasets import ArgoProfileDataset
 from models.vae import VAE, vae_loss
 from utils.loss_logger import LossLogger
 

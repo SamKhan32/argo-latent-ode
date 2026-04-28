@@ -13,7 +13,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchdiffeq import odeint
 
 from config import ODE_LR, ODE_EPOCHS, BATCH_SIZE, LATENT_DIM, WINDOW_SIZE, STRIDE
-from data.datasets import ArgoLatentDataset
+from utils.datasets import ArgoLatentDataset
 from models.ode import ODEFunc
 from utils.loss_logger import LossLogger
 

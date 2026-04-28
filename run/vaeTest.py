@@ -5,8 +5,8 @@ from config import (
     LOW_DRIFT_PATH, INTERP_PATH,
     LATENT_DIM, ENCODER_HIDDEN, DECODER_HIDDEN, ODE_HIDDEN,
 )
-from data.split import build_splits
-from data.datasets import ArgoProfileDataset, ArgoLatentDataset, ArgoProbeDataset
+from utils.split import build_splits
+from utils.datasets import ArgoProfileDataset, ArgoLatentDataset, ArgoProbeDataset
 from models.vae import VAE                        # <-- VAE
 from models.ode import ODEFunc
 from models.gru import GRUDynamics

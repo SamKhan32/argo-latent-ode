@@ -6,11 +6,11 @@ from config import (
     LOW_DRIFT_PATH, INTERP_PATH,
     LATENT_DIM, ENCODER_HIDDEN, DECODER_HIDDEN, ODE_HIDDEN,
 )
-from data.split import build_splits
-from data.datasets import ArgoProfileDataset, ArgoLatentDataset, ArgoProbeDataset
-from models.architectures.autoencoder import Autoencoder
-from models.architectures.ode import ODEFunc
-from models.architectures.gru import GRUDynamics
+from utils.split import build_splits
+from utils.datasets import ArgoProfileDataset, ArgoLatentDataset, ArgoProbeDataset
+from models.autoencoder import Autoencoder
+from models.ode import ODEFunc
+from models.gru import GRUDynamics
 from train.train_encoder import train_encoder
 from train.train_node import train_ode
 from train.train_probe import train_probe
